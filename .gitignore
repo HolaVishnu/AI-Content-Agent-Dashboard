@@ -10,6 +10,9 @@ node_modules/
 *.log
 daily-run.log
 
+# Token refresh metadata (no secrets, just timestamps)
+scripts/token-meta.json
+
 # Data with potential personal info
 #dashboard/data.json
 

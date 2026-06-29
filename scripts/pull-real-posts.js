@@ -5,7 +5,7 @@ const path = require('path');
 const https = require('https');
 
 const TOKEN = process.env.INSTAGRAM_ACCESS_TOKEN;
-const IG_USER_ID = '277571164470580345';
+const IG_USER_ID = process.env.INSTAGRAM_BUSINESS_ID;
 const FOLLOWERS = 840;
 
 function httpsGet(url) {
@@ -25,7 +25,7 @@ async function main() {
   console.log('Pulling real posts from @vpspaceman...');
 
   const url = `https://graph.instagram.com/v22.0/${IG_USER_ID}/media` +
-    `?fields=id,caption,media_type,timestamp,permalink` +
+    `?fields=id,caption,media_type,timestamp,permalink,like_count,comments_count` +
     `&limit=30&access_token=${TOKEN}`;
 
   const data = await httpsGet(url);
@@ -38,18 +38,22 @@ async function main() {
   const posts = data.data || [];
   console.log(`Got ${posts.length} real posts.`);
 
-  const normalized = posts.map(p => ({
-    id: p.id,
-    caption: p.caption || '',
-    mediaType: p.media_type === 'VIDEO' ? 'reel' : p.media_type === 'CAROUSEL_ALBUM' ? 'carousel' : 'image',
-    likesCount: 0,
-    commentsCount: 0,
-    timestamp: p.timestamp,
-    hashtags: (p.caption || '').match(/#\w+/g) || [],
-    engagementRate: 0,
-    url: p.permalink,
-    realData: true,
-  }));
+  const normalized = posts.map(p => {
+    const likesCount = p.like_count || 0;
+    const commentsCount = p.comments_count || 0;
+    return {
+      id: p.id,
+      caption: p.caption || '',
+      mediaType: p.media_type === 'VIDEO' ? 'reel' : p.media_type === 'CAROUSEL_ALBUM' ? 'carousel' : 'image',
+      likesCount,
+      commentsCount,
+      timestamp: p.timestamp,
+      hashtags: (p.caption || '').match(/#\w+/g) || [],
+      engagementRate: FOLLOWERS ? (likesCount + commentsCount) / FOLLOWERS : 0,
+      url: p.permalink,
+      realData: true,
+    };
+  });
 
   // Show sample
   console.log('\nSample posts:');

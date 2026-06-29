@@ -17,6 +17,14 @@ function log(msg) {
 async function main() {
   log('=== Daily run started ===');
   try {
+    log('Step 0: Refreshing Instagram access token...');
+    execSync(`node ${path.join(__dirname, 'refresh-instagram-token.js')}`, { cwd: ROOT, stdio: 'inherit' });
+    log('Step 0: Done');
+  } catch (err) {
+    log('Step 0 FAILED: ' + err.message + ' (token may be near expiry — report will flag this)');
+  }
+
+  try {
     log('Step 1: Pulling profile data...');
     execSync(`node ${path.join(__dirname, 'pull-data.js')}`, { cwd: ROOT, stdio: 'inherit' });
     log('Step 1: Done');
@@ -25,11 +33,19 @@ async function main() {
   }
 
   try {
-    log('Step 2: Sending Telegram report...');
-    execSync(`node ${path.join(__dirname, 'telegram-report.js')}`, { cwd: ROOT, stdio: 'inherit' });
+    log('Step 2: Pulling real Instagram post data (overwrites sample posts for @vpspaceman)...');
+    execSync(`node ${path.join(__dirname, 'pull-real-posts.js')}`, { cwd: ROOT, stdio: 'inherit' });
     log('Step 2: Done');
   } catch (err) {
     log('Step 2 FAILED: ' + err.message);
+  }
+
+  try {
+    log('Step 3: Sending Telegram report...');
+    execSync(`node ${path.join(__dirname, 'telegram-report.js')}`, { cwd: ROOT, stdio: 'inherit' });
+    log('Step 3: Done');
+  } catch (err) {
+    log('Step 3 FAILED: ' + err.message);
   }
 
   log('=== Daily run complete ===\n');
