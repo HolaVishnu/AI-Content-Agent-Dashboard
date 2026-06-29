@@ -11,7 +11,7 @@ node_modules/
 daily-run.log
 
 # Data with potential personal info
-dashboard/data.json
+#dashboard/data.json
 
 # OS files
 .DS_Store
