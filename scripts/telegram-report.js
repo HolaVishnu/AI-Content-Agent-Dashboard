@@ -17,9 +17,26 @@ async function sendMessage(text) {
   return data;
 }
 
+function getTokenWarning() {
+  const metaPath = path.join(__dirname, 'token-meta.json');
+  if (!fs.existsSync(metaPath)) {
+    return '⚠️ <b>Instagram token status unknown</b> — refresh-instagram-token.js has not run yet.';
+  }
+  const meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
+  if (!meta.ok) {
+    return `⚠️ <b>Instagram token refresh FAILED</b>\n${meta.error || 'Unknown error'}\nReal post data will stop updating soon — re-authenticate via Graph API Explorer.`;
+  }
+  const daysLeft = Math.round((new Date(meta.expiresAt) - Date.now()) / 86400000);
+  if (daysLeft <= 10) {
+    return `⚠️ <b>Instagram token expires in ${daysLeft} day(s)</b> (${meta.expiresAt.slice(0,10)}) — refresh is automatic, but check the log if this keeps shrinking.`;
+  }
+  return null;
+}
+
 async function main() {
   const dataPath = path.join(__dirname, '..', 'dashboard', 'data.json');
   const data = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
+  const tokenWarning = getTokenWarning();
 
   const profile = data.profiles['vpspaceman'] || {};
   const posts = data.posts['vpspaceman'] || [];
@@ -47,7 +64,7 @@ async function main() {
 
   const message = `🚀 <b>Content Agent Daily Report</b>
 📅 ${today}
-
+${tokenWarning ? `\n${tokenWarning}\n` : ''}
 👤 <b>@vpspaceman</b>
 ├ Followers: <b>${profile.followersCount || 840}</b>
 ├ Total posts: <b>${profile.postsCount || 47}</b>
