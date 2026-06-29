@@ -1,0 +1,18 @@
+﻿# Secrets — never commit
+.env
+.env.local
+.env.*
+
+# Dependencies
+node_modules/
+
+# Logs
+*.log
+daily-run.log
+
+# Data with potential personal info
+dashboard/data.json
+
+# OS files
+.DS_Store
+Thumbs.db

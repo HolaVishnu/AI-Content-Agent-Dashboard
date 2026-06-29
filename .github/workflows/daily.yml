@@ -1,0 +1,82 @@
+name: Daily Content Agent Run
+
+on:
+  # Run daily at 8 AM IST (2:30 AM UTC)
+  schedule:
+    - cron: '30 2 * * *'
+  # Also run on every push to main
+  push:
+    branches: [ main ]
+  # Allow manual trigger from GitHub UI
+  workflow_dispatch:
+
+jobs:
+  daily-run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Create .env from secrets
+        run: |
+          echo "APIFY_TOKEN=${{ secrets.APIFY_TOKEN }}" >> .env
+          echo "ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" >> .env
+          echo "INSTAGRAM_ACCESS_TOKEN=${{ secrets.INSTAGRAM_ACCESS_TOKEN }}" >> .env
+          echo "TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}" >> .env
+          echo "TELEGRAM_CHAT_ID=${{ secrets.TELEGRAM_CHAT_ID }}" >> .env
+
+      - name: Pull Instagram profile data
+        run: node scripts/pull-data.js
+        continue-on-error: true
+
+      - name: Send Telegram report
+        run: node scripts/telegram-report.js
+
+      - name: Upload data.json as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dashboard-data
+          path: dashboard/data.json
+
+  deploy-dashboard:
+    runs-on: ubuntu-latest
+    needs: daily-run
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Download data artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dashboard-data
+          path: dashboard/
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dashboard
+          publish_branch: gh-pages

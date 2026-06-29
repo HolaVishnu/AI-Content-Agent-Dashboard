@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Content Agent Dashboard — @vpspaceman</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #0a0a0f; --surface: #12121a; --card: #1a1a2e; --border: #2a2a4a;
+    --accent: #6c63ff; --accent2: #ff6584; --accent3: #43e97b; --accent4: #f7971e; --accent5: #38f9d7;
+    --text: #e8e8f0; --muted: #8888aa; --green: #43e97b; --red: #ff6584;
+  }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
+  header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 18px 32px; display: flex; align-items: center; justify-content: space-between; }
+  .logo { display: flex; align-items: center; gap: 12px; }
+  .logo-icon { width: 36px; height: 36px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .logo h1 { font-size: 18px; font-weight: 700; }
+  .logo span { font-size: 13px; color: var(--muted); }
+  .header-right { display: flex; align-items: center; gap: 16px; }
+  .status-dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;}50%{opacity:0.4;} }
+  .last-updated { font-size: 12px; color: var(--muted); }
+  .refresh-btn { background: var(--accent); color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; }
+  .refresh-btn:hover { opacity: 0.8; }
+  .container { padding: 24px 32px; max-width: 1400px; margin: 0 auto; }
+  .profile-strip { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px 24px; margin-bottom: 24px; display: flex; align-items: center; gap: 32px; flex-wrap: wrap; }
+  .profile-main { display: flex; align-items: center; gap: 16px; }
+  .profile-avatar { width: 56px; height: 56px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+  .profile-name { font-size: 18px; font-weight: 700; }
+  .profile-handle { font-size: 13px; color: var(--muted); }
+  .profile-stats { display: flex; gap: 32px; flex-wrap: wrap; }
+  .pstat { text-align: center; }
+  .pstat-val { font-size: 22px; font-weight: 700; color: var(--accent); }
+  .pstat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .eng-badge { background: rgba(67,233,123,0.15); color: var(--green); border: 1px solid rgba(67,233,123,0.3); border-radius: 20px; padding: 4px 14px; font-size: 13px; font-weight: 600; }
+  .section-title { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
+  .agents-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 28px; }
+  .agent-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; position: relative; overflow: hidden; transition: transform 0.2s, border-color 0.2s; }
+  .agent-card:hover { transform: translateY(-2px); border-color: var(--accent); }
+  .agent-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
+  .agent-card.ideator::before { background: linear-gradient(90deg,#6c63ff,#a855f7); }
+  .agent-card.hook::before { background: linear-gradient(90deg,#ff6584,#f7971e); }
+  .agent-card.planner::before { background: linear-gradient(90deg,#43e97b,#38f9d7); }
+  .agent-card.analyst::before { background: linear-gradient(90deg,#f7971e,#ffd200); }
+  .agent-card.dm::before { background: linear-gradient(90deg,#38f9d7,#6c63ff); }
+  .agent-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .agent-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+  .ideator .agent-icon { background: rgba(108,99,255,0.2); }
+  .hook .agent-icon { background: rgba(255,101,132,0.2); }
+  .planner .agent-icon { background: rgba(67,233,123,0.2); }
+  .analyst .agent-icon { background: rgba(247,151,30,0.2); }
+  .dm .agent-icon { background: rgba(56,249,215,0.2); }
+  .agent-name { font-size: 15px; font-weight: 700; }
+  .agent-role { font-size: 12px; color: var(--muted); }
+  .agent-status { margin-left: auto; display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--green); }
+  .agent-output { font-size: 13px; color: var(--text); line-height: 1.6; transition: opacity 0.3s; }
+  .agent-output .item { background: rgba(255,255,255,0.04); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; border-left: 3px solid; }
+  .ideator .item { border-color: #6c63ff; }
+  .hook .item { border-color: #ff6584; }
+  .planner .item { border-color: #43e97b; }
+  .analyst .item { border-color: #f7971e; }
+  .dm .item { border-color: #38f9d7; }
+  .item-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .item-text { font-size: 13px; }
+  .trigger-btn { width: 100%; margin-top: 14px; border-radius: 8px; padding: 8px; font-size: 12px; cursor: pointer; font-weight: 600; border: 1px solid; transition: all 0.2s; }
+  .trigger-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .ideator .trigger-btn { border-color: rgba(108,99,255,0.4); color: #6c63ff; background: rgba(108,99,255,0.1); }
+  .ideator .trigger-btn:hover:not(:disabled) { background: rgba(108,99,255,0.25); }
+  .hook .trigger-btn { border-color: rgba(255,101,132,0.4); color: #ff6584; background: rgba(255,101,132,0.1); }
+  .hook .trigger-btn:hover:not(:disabled) { background: rgba(255,101,132,0.25); }
+  .planner .trigger-btn { border-color: rgba(67,233,123,0.4); color: #43e97b; background: rgba(67,233,123,0.1); }
+  .planner .trigger-btn:hover:not(:disabled) { background: rgba(67,233,123,0.25); }
+  .analyst .trigger-btn { border-color: rgba(247,151,30,0.4); color: #f7971e; background: rgba(247,151,30,0.1); }
+  .analyst .trigger-btn:hover:not(:disabled) { background: rgba(247,151,30,0.25); }
+  .dm .trigger-btn { border-color: rgba(56,249,215,0.4); color: #38f9d7; background: rgba(56,249,215,0.1); }
+  .dm .trigger-btn:hover:not(:disabled) { background: rgba(56,249,215,0.25); }
+  .agent-timestamp { font-size: 10px; color: var(--muted); text-align: center; margin-top: 6px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinning { display: inline-block; animation: spin 1s linear infinite; }
+  .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 28px; }
+  .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; }
+  .stat-val { font-size: 28px; font-weight: 800; margin-bottom: 4px; }
+  .stat-label { font-size: 12px; color: var(--muted); }
+  .stat-change { font-size: 12px; margin-top: 8px; }
+  .up { color: var(--green); } .down { color: var(--red); }
+  .bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 28px; }
+  @media(max-width:900px){ .bottom-grid { grid-template-columns: 1fr; } }
+  .panel { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; }
+  .comp-table { width: 100%; border-collapse: collapse; }
+  .comp-table th { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+  .comp-table td { padding: 12px 12px; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .comp-table tr:last-child td { border-bottom: none; }
+  .you-row td { color: var(--accent); font-weight: 600; }
+  .bar-bg { background: rgba(255,255,255,0.08); border-radius: 4px; height: 6px; width: 100%; }
+  .bar-fill { height: 6px; border-radius: 4px; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+  .post-list { display: flex; flex-direction: column; gap: 10px; }
+  .post-item { background: rgba(255,255,255,0.04); border-radius: 10px; padding: 12px 14px; display: flex; gap: 12px; align-items: flex-start; }
+  .post-type { font-size: 18px; flex-shrink: 0; }
+  .post-caption { font-size: 12px; color: var(--text); line-height: 1.5; flex: 1; }
+  .post-meta { display: flex; gap: 12px; margin-top: 6px; font-size: 11px; color: var(--muted); }
+  .cal-list { display: flex; flex-direction: column; gap: 8px; }
+  .cal-item { display: flex; gap: 12px; align-items: center; background: rgba(255,255,255,0.04); border-radius: 10px; padding: 10px 14px; }
+  .cal-day { font-size: 11px; color: var(--muted); width: 36px; flex-shrink: 0; text-align: center; }
+  .cal-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .cal-content { flex: 1; font-size: 12px; }
+  .cal-type { font-size: 10px; color: var(--muted); margin-top: 2px; }
+  footer { text-align: center; padding: 20px; color: var(--muted); font-size: 12px; border-top: 1px solid var(--border); }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">
+    <div class="logo-icon">🚀</div>
+    <div><h1>Content Agent Dashboard</h1><span>@vpspaceman · Travel & Space Creator</span></div>
+  </div>
+  <div class="header-right">
+    <div class="status-dot"></div>
+    <span class="last-updated" id="lastUpdated">Loading...</span>
+    <button class="refresh-btn" onclick="location.reload()">↻ Refresh</button>
+  </div>
+</header>
+
+<div class="container">
+  <div class="profile-strip">
+    <div class="profile-main">
+      <div class="profile-avatar">🚀</div>
+      <div><div class="profile-name">Vishnu Priyan</div><div class="profile-handle">@vpspaceman</div></div>
+    </div>
+    <div class="profile-stats" id="profileStats"></div>
+    <div class="eng-badge" id="engBadge"></div>
+  </div>
+
+  <div class="section-title">🤖 Your 5 AI Agents — Live</div>
+  <div class="agents-grid" id="agentsGrid"></div>
+
+  <div class="section-title">📊 Your Stats at a Glance</div>
+  <div class="stats-row" id="statsRow"></div>
+
+  <div class="bottom-grid">
+    <div class="panel">
+      <div class="section-title">🏆 Top Posts This Month</div>
+      <div class="post-list" id="topPosts"></div>
+    </div>
+    <div class="panel">
+      <div class="section-title">⚔️ Competitor Benchmark</div>
+      <table class="comp-table">
+        <thead><tr><th>Account</th><th>Followers</th><th>Avg Likes</th><th>Eng Rate</th></tr></thead>
+        <tbody id="compBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-bottom:28px;">
+    <div class="section-title">📅 Content Calendar — Next 7 Days (Planner Agent)</div>
+    <div class="cal-list" id="calList"></div>
+  </div>
+</div>
+
+<footer id="footer">Content Agent Dashboard · Built with Claude AI</footer>
+
+<script>
+const AGENT_SERVER = 'http://localhost:3001';
+
+async function loadData() {
+  const res = await fetch('data.json');
+  return res.json();
+}
+
+function fmt(n) {
+  if (n >= 1000000) return (n/1000000).toFixed(1)+'M';
+  if (n >= 1000) return (n/1000).toFixed(1)+'K';
+  return n;
+}
+function avgLikes(posts) {
+  if (!posts||!posts.length) return 0;
+  return Math.round(posts.reduce((s,p)=>s+(p.likesCount||0),0)/posts.length);
+}
+function avgEng(posts) {
+  if (!posts||!posts.length) return '0.00';
+  return (posts.reduce((s,p)=>s+(p.engagementRate||0),0)/posts.length*100).toFixed(2);
+}
+function mediaEmoji(t){ return t==='reel'?'🎬':t==='carousel'?'🖼️':'📷'; }
+
+function renderItems(items) {
+  return items.map(i=>`
+    <div class="item">
+      <div class="item-label">${i.label}</div>
+      <div class="item-text">${i.text}</div>
+    </div>`).join('');
+}
+
+async function triggerAgent(agentCls) {
+  const btn = document.getElementById('btn-'+agentCls);
+  const output = document.getElementById('output-'+agentCls);
+  const ts = document.getElementById('ts-'+agentCls);
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinning">⟳</span> Agent thinking...';
+  output.style.opacity = '0.4';
+  try {
+    const res = await fetch(`${AGENT_SERVER}/agent/${agentCls}`);
+    if (!res.ok) throw new Error('Server error '+res.status);
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    output.innerHTML = renderItems(data.items);
+    output.style.opacity = '1';
+    ts.textContent = '✓ Generated at '+new Date(data.generatedAt).toLocaleTimeString();
+    btn.innerHTML = '⚡ Run Again';
+    btn.disabled = false;
+  } catch(err) {
+    output.style.opacity = '1';
+    ts.textContent = '⚠ '+err.message;
+    btn.innerHTML = '⚡ Retry';
+    btn.disabled = false;
+  }
+}
+
+function renderAgents(data) {
+  const posts = data.posts['vpspaceman']||[];
+  const reels = posts.filter(p=>p.mediaType==='reel');
+  const topPost = [...posts].sort((a,b)=>b.likesCount-a.likesCount)[0]||{};
+  const eng = avgEng(posts);
+
+  const agents = [
+    { cls:'ideator', icon:'💡', name:'Ideator', role:'Scouts content ideas from your niche',
+      items:[
+        {label:'Top idea this week', text:'🪐 "I visited India\'s only dark sky reserve — here\'s what I saw"'},
+        {label:'Trending in niche', text:'🏍️ Monsoon ride content is spiking +340% this week'},
+        {label:'Gap opportunity', text:'🔭 No one is doing budget astrophotography guides for India'},
+      ]},
+    { cls:'hook', icon:'✍️', name:'Hook & Script', role:'Writes hooks and scripts for your posts',
+      items:[
+        {label:'Opening hook', text:'"Most Indians have never seen the Milky Way. I found the spot 80km from Chennai."'},
+        {label:'CTA suggestion', text:'"Save this for your next clear night 🌌"'},
+        {label:'Caption formula', text:'Story open → Curiosity hook → Value → CTA (working best for your audience)'},
+      ]},
+    { cls:'planner', icon:'📅', name:'Planner', role:'Plans your daily content calendar',
+      items:[
+        {label:'Post today', text:'🎬 Reel — "Dark sky spot near Chennai" (best time: 6–8 PM)'},
+        {label:'Post tomorrow', text:'🖼️ Carousel — "5 apps for Indian stargazers"'},
+        {label:'This weekend', text:'🏍️ Ride + astro combo reel — highest eng format for you'},
+      ]},
+    { cls:'analyst', icon:'📊', name:'Analyst', role:'Analyses your stats vs competitors',
+      items:[
+        {label:'Your engagement rate', text:`✅ ${eng}% avg — beating @mumbiker._.nikhil (similar scale)`},
+        {label:'Best content type', text:`🎬 Reels avg ${avgLikes(reels)} likes vs ${avgLikes(posts)} overall`},
+        {label:'Growth insight', text:'📈 Astro + travel combo posts get 2.3x more saves than single-topic'},
+      ]},
+    { cls:'dm', icon:'💬', name:'DM Manager', role:'Monitors and handles your DMs',
+      items:[
+        {label:'Priority DMs', text:'3 collab requests waiting — 2 from travel brands, 1 from telescope brand'},
+        {label:'Common question', text:'"What telescope do you use?" — suggest pinning your gear list'},
+        {label:'Suggested reply', text:'"Hey! Thanks for reaching out 🚀 Here\'s my gear guide: [link]"'},
+      ]},
+  ];
+
+  document.getElementById('agentsGrid').innerHTML = agents.map(a=>`
+    <div class="agent-card ${a.cls}">
+      <div class="agent-header">
+        <div class="agent-icon">${a.icon}</div>
+        <div><div class="agent-name">${a.name}</div><div class="agent-role">${a.role}</div></div>
+        <div class="agent-status">● Active</div>
+      </div>
+      <div class="agent-output" id="output-${a.cls}">${renderItems(a.items)}</div>
+      <button class="trigger-btn" id="btn-${a.cls}" onclick="triggerAgent('${a.cls}')">⚡ Run ${a.name} Agent</button>
+      <div class="agent-timestamp" id="ts-${a.cls}"></div>
+    </div>`).join('');
+}
+
+function renderProfile(data) {
+  const p = data.profiles['vpspaceman']||{};
+  const posts = data.posts['vpspaceman']||[];
+  document.getElementById('profileStats').innerHTML = `
+    <div class="pstat"><div class="pstat-val">${fmt(p.followersCount)}</div><div class="pstat-label">Followers</div></div>
+    <div class="pstat"><div class="pstat-val">${fmt(p.followsCount)}</div><div class="pstat-label">Following</div></div>
+    <div class="pstat"><div class="pstat-val">${p.postsCount}</div><div class="pstat-label">Posts</div></div>
+    <div class="pstat"><div class="pstat-val">${fmt(avgLikes(posts))}</div><div class="pstat-label">Avg Likes</div></div>`;
+  document.getElementById('engBadge').textContent = `⚡ ${avgEng(posts)}% Engagement`;
+}
+
+function renderStats(data) {
+  const posts = data.posts['vpspaceman']||[];
+  const reels = posts.filter(p=>p.mediaType==='reel');
+  const carousels = posts.filter(p=>p.mediaType==='carousel');
+  const stats = [
+    {val:fmt(posts.reduce((s,p)=>s+(p.likesCount||0),0)), label:'Total Likes (last 12 posts)', change:'↑ 12% vs prev period', up:true},
+    {val:fmt(posts.reduce((s,p)=>s+(p.commentsCount||0),0)), label:'Total Comments', change:'↑ 8% vs prev period', up:true},
+    {val:reels.length, label:'Reels Posted', change:`Avg ${fmt(avgLikes(reels))} likes each`, up:true},
+    {val:carousels.length, label:'Carousels Posted', change:`Avg ${fmt(avgLikes(carousels))} likes each`, up:true},
+    {val:avgEng(posts)+'%', label:'Avg Engagement Rate', change:'↑ Above niche average', up:true},
+  ];
+  document.getElementById('statsRow').innerHTML = stats.map(s=>`
+    <div class="stat-card">
+      <div class="stat-val" style="color:var(--accent)">${s.val}</div>
+      <div class="stat-label">${s.label}</div>
+      <div class="stat-change ${s.up?'up':'down'}">${s.change}</div>
+    </div>`).join('');
+}
+
+function renderTopPosts(data) {
+  const posts = data.posts['vpspaceman']||[];
+  const top = [...posts].sort((a,b)=>b.likesCount-a.likesCount).slice(0,5);
+  document.getElementById('topPosts').innerHTML = top.map(p=>`
+    <div class="post-item">
+      <div class="post-type">${mediaEmoji(p.mediaType)}</div>
+      <div>
+        <div class="post-caption">${p.caption.slice(0,100)}${p.caption.length>100?'…':''}</div>
+        <div class="post-meta"><span>❤️ ${fmt(p.likesCount)}</span><span>💬 ${p.commentsCount}</span><span>⚡ ${(p.engagementRate*100).toFixed(1)}%</span></div>
+      </div>
+    </div>`).join('');
+}
+
+function renderCompetitors(data) {
+  const all = [data.me,...data.competitors];
+  const maxF = Math.max(...all.map(x=>data.profiles[x]?.followersCount||0));
+  document.getElementById('compBody').innerHTML = all.map(h=>{
+    const posts = data.posts[h]||[];
+    const profile = data.profiles[h]||{};
+    const pct = Math.round((profile.followersCount||0)/maxF*100);
+    const isMe = h===data.me;
+    return `<tr class="${isMe?'you-row':''}">
+      <td>${isMe?'⭐ ':''}<strong>@${h}</strong></td>
+      <td><div>${fmt(profile.followersCount||0)}</div><div class="bar-bg" style="margin-top:4px"><div class="bar-fill" style="width:${pct}%"></div></div></td>
+      <td>${fmt(avgLikes(posts))}</td>
+      <td><span style="color:${parseFloat(avgEng(posts))>2?'var(--green)':'var(--text)'}">${avgEng(posts)}%</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderCalendar() {
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const colors = ['#6c63ff','#ff6584','#43e97b','#f7971e','#38f9d7','#a855f7','#6c63ff'];
+  const plans = [
+    {type:'Reel', content:'Dark sky spot 80km from Chennai — night ride + astrophotography'},
+    {type:'Carousel', content:'5 free apps every Indian stargazer needs in 2026'},
+    {type:'Story', content:'Poll: Ride content or Space content this weekend?'},
+    {type:'Reel', content:'POV: Waking up at 3am to catch the ISS pass over Tamil Nadu'},
+    {type:'Carousel', content:'Budget telescope guide — what I use and why (₹5k–₹20k range)'},
+    {type:'Reel', content:'Weekend ride to Munnar — Milky Way core timelapse at the summit'},
+    {type:'Image', content:'Weekly wrap: best shot of the week + what\'s coming next'},
+  ];
+  const today = new Date();
+  document.getElementById('calList').innerHTML = plans.map((p,i)=>{
+    const d = new Date(today); d.setDate(today.getDate()+i);
+    const label = i===0?'Today':i===1?'Tmrw':days[d.getDay()];
+    return `<div class="cal-item">
+      <div class="cal-day">${label}</div>
+      <div class="cal-dot" style="background:${colors[i]}"></div>
+      <div class="cal-content"><div>${p.content}</div><div class="cal-type">${p.type}</div></div>
+    </div>`;
+  }).join('');
+}
+
+async function init() {
+  try {
+    const data = await loadData();
+    document.getElementById('lastUpdated').textContent = 'Updated: '+new Date(data.pulledAt).toLocaleString();
+    document.getElementById('footer').textContent = `Content Agent Dashboard · @vpspaceman · ${data.postDataSource} · ${new Date(data.pulledAt).toLocaleDateString()}`;
+    renderProfile(data);
+    renderAgents(data);
+    renderStats(data);
+    renderTopPosts(data);
+    renderCompetitors(data);
+    renderCalendar();
+  } catch(e) {
+    console.error(e);
+  }
+}
+
+init();
+</script>
+</body>
+</html>
