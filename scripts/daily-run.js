@@ -41,11 +41,19 @@ async function main() {
   }
 
   try {
-    log('Step 3: Sending Telegram report...');
-    execSync(`node ${path.join(__dirname, 'telegram-report.js')}`, { cwd: ROOT, stdio: 'inherit' });
+    log('Step 3: Pulling daily briefing headlines (Astronomy/NASA/Space/Rockets/Bikes)...');
+    execSync(`node ${path.join(__dirname, 'pull-news.js')}`, { cwd: ROOT, stdio: 'inherit' });
     log('Step 3: Done');
   } catch (err) {
     log('Step 3 FAILED: ' + err.message);
+  }
+
+  try {
+    log('Step 4: Sending Telegram report...');
+    execSync(`node ${path.join(__dirname, 'telegram-report.js')}`, { cwd: ROOT, stdio: 'inherit' });
+    log('Step 4: Done');
+  } catch (err) {
+    log('Step 4 FAILED: ' + err.message);
   }
 
   log('=== Daily run complete ===\n');
