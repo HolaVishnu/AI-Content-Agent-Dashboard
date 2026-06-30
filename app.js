@@ -138,7 +138,13 @@ document.querySelectorAll('.nav-tab').forEach(tab => {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.getElementById('view-' + tab.dataset.view).classList.add('active');
     document.getElementById('scrollDots').style.display = tab.dataset.view === 'home' ? 'flex' : 'none';
-    if (tab.dataset.view === 'home') setTimeout(onSolarResize, 50), setTimeout(onConstResize, 50);
+    if (tab.dataset.view === 'home') {
+      setTimeout(onSolarResize, 50);
+      setTimeout(onConstResize, 50);
+      setTimeout(onGalaxyResize, 50);
+      setTimeout(onUniverseResize, 50);
+    }
+    if (tab.dataset.view === 'briefing' && !briefingLoaded) { briefingLoaded = true; loadBriefing(); }
   });
 });
 
@@ -152,17 +158,27 @@ window.addEventListener('keydown', e => { if (e.key === 'Escape') heroLightbox.c
 
 // ── SCROLL DOTS (home sections) ──────────────────────────────────────────
 const homeView = document.getElementById('view-home');
-const sections = [document.getElementById('sec-hero'), document.getElementById('sec-solar'), document.getElementById('sec-const')];
+const sections = [
+  document.getElementById('sec-hero'),
+  document.getElementById('sec-solar'),
+  document.getElementById('sec-galaxy'),
+  document.getElementById('sec-universe'),
+  document.getElementById('sec-const'),
+];
 document.querySelectorAll('.scroll-dot').forEach(dot => {
   dot.addEventListener('click', () => sections[+dot.dataset.section].scrollIntoView({ behavior: 'smooth' }));
 });
+let galaxyInited = false, universeInited = false, briefingLoaded = false;
 const dotObserver = new IntersectionObserver(entries => {
   entries.forEach(entry => {
     if (entry.isIntersecting) {
       const idx = sections.indexOf(entry.target);
       document.querySelectorAll('.scroll-dot').forEach((d,i) => d.classList.toggle('active', i===idx));
+      hideTooltip();
       if (idx === 1 && !solarInited) { solarInited = true; initSolarSystem(); }
-      if (idx === 2 && !constInited) { constInited = true; initConstellations(); }
+      if (idx === 2 && !galaxyInited) { galaxyInited = true; initGalaxy(); }
+      if (idx === 3 && !universeInited) { universeInited = true; initUniverse(); }
+      if (idx === 4 && !constInited) { constInited = true; initConstellations(); }
     }
   });
 }, { root: homeView, threshold: 0.5 });
@@ -375,27 +391,226 @@ setInterval(tickLiveStatus, 1000);
 // ══════════════════════════════════════════════════════════════════════════
 // SOLAR SYSTEM (Three.js, hover tooltip)
 // ══════════════════════════════════════════════════════════════════════════
+// spinDays = real rotation period in Earth days (negative = retrograde, i.e. Venus/Uranus
+// visibly spin backwards relative to their orbit, same as in reality).
 const PLANETS = [
-  { key:'mercury', name:'Mercury', type:'Terrestrial Planet', color:0x9c9c9c, radius:0.38, orbit:14, period:0.24,
+  { key:'mercury', name:'Mercury', type:'Terrestrial Planet', color:0x9c9c9c, radius:0.38, orbit:14, period:0.24, spinDays:58.6,
     desc:'The smallest, fastest planet — a scorched, cratered world baked by the closest orbit to the Sun.' },
-  { key:'venus', name:'Venus', type:'Terrestrial Planet', color:0xe8c27a, radius:0.6, orbit:19, period:0.62,
-    desc:'Earth\'s twin in size, but a runaway greenhouse hell under crushing CO₂ skies.' },
-  { key:'earth', name:'Earth', type:'Terrestrial Planet', color:0x4d96ff, radius:0.64, orbit:25, period:1,
+  { key:'venus', name:'Venus', type:'Terrestrial Planet', color:0xe8c27a, radius:0.6, orbit:19, period:0.62, spinDays:-243,
+    desc:'Earth\'s twin in size, but a runaway greenhouse hell under crushing CO₂ skies — and it spins backwards.' },
+  { key:'earth', name:'Earth', type:'Terrestrial Planet', color:0x4d96ff, radius:0.64, orbit:25, period:1, spinDays:1,
     desc:'Home. The only known world with liquid oceans, breathable air, and life.' },
-  { key:'mars', name:'Mars', type:'Terrestrial Planet', color:0xd1542e, radius:0.5, orbit:32, period:1.88,
+  { key:'mars', name:'Mars', type:'Terrestrial Planet', color:0xd1542e, radius:0.5, orbit:32, period:1.88, spinDays:1.03,
     desc:'The Red Planet — iron oxide dust, polar ice, and the tallest volcano in the solar system.' },
-  { key:'jupiter', name:'Jupiter', type:'Gas Giant', color:0xd9a06b, radius:2.2, orbit:48, period:11.86,
-    desc:'The largest planet — a churning hydrogen giant with a storm bigger than Earth.' },
-  { key:'saturn', name:'Saturn', type:'Gas Giant', color:0xead6a8, radius:1.9, orbit:66, period:29.46, hasRing:true,
+  { key:'jupiter', name:'Jupiter', type:'Gas Giant', color:0xd9a06b, radius:2.2, orbit:48, period:11.86, spinDays:0.41,
+    desc:'The largest planet — a churning hydrogen giant with a storm bigger than Earth. Spins so fast its day is under 10 hours.' },
+  { key:'saturn', name:'Saturn', type:'Gas Giant', color:0xead6a8, radius:1.9, orbit:66, period:29.46, spinDays:0.45, hasRing:true,
     desc:'Famed for its dazzling ice-and-rock ring system — low density enough to float in water.' },
-  { key:'uranus', name:'Uranus', type:'Ice Giant', color:0x9fe3e3, radius:1.3, orbit:82, period:84.01,
-    desc:'Tipped almost completely on its side, rolling around the Sun like a ball.' },
-  { key:'neptune', name:'Neptune', type:'Ice Giant', color:0x4169e1, radius:1.25, orbit:96, period:164.8,
+  { key:'uranus', name:'Uranus', type:'Ice Giant', color:0x9fe3e3, radius:1.3, orbit:82, period:84.01, spinDays:-0.72,
+    desc:'Tipped almost completely on its side, rolling around the Sun like a ball — and also spins backwards.' },
+  { key:'neptune', name:'Neptune', type:'Ice Giant', color:0x4169e1, radius:1.25, orbit:96, period:164.8, spinDays:0.67,
     desc:'The windiest world known — supersonic methane storms at the dark edge of the system.' },
 ];
 
+// Real major moons (and one artificial satellite) per planet, with relative
+// orbit radius/period scaled for a clear visual on top of the planet's own spin.
+const MOONS = {
+  earth: [
+    { key:'moon', name:'The Moon', type:'Natural Satellite', color:0xcfcfcf, radius:0.17, orbit:1.7, periodDays:27.3,
+      desc:'Earth\'s only natural satellite — formed ~4.5 billion years ago, likely from a giant impact.' },
+    { key:'iss', name:'ISS', type:'Artificial Satellite (symbolic)', color:0xffffff, radius:0.06, orbit:0.95, periodDays:0.065,
+      desc:'The International Space Station orbits Earth roughly every 92 minutes — shown here symbolically, not to scale.' },
+  ],
+  mars: [
+    { key:'phobos', name:'Phobos', type:'Natural Satellite', color:0x9c8a7a, radius:0.07, orbit:0.85, periodDays:0.32,
+      desc:'The larger, closer of Mars\' two moons — a lumpy captured asteroid slowly spiraling inward.' },
+    { key:'deimos', name:'Deimos', type:'Natural Satellite', color:0xada094, radius:0.05, orbit:1.25, periodDays:1.26,
+      desc:'The smaller, more distant Martian moon — likely another captured asteroid.' },
+  ],
+  jupiter: [
+    { key:'io', name:'Io', type:'Galilean Moon', color:0xe9d18a, radius:0.22, orbit:3.0, periodDays:1.77,
+      desc:'The most volcanically active body in the solar system, wracked by Jupiter\'s tidal forces.' },
+    { key:'europa', name:'Europa', type:'Galilean Moon', color:0xd8c9b0, radius:0.19, orbit:3.8, periodDays:3.55,
+      desc:'An ice-shelled moon hiding a global ocean — one of the best bets for life beyond Earth.' },
+    { key:'ganymede', name:'Ganymede', type:'Galilean Moon', color:0xa89a86, radius:0.27, orbit:4.7, periodDays:7.15,
+      desc:'The largest moon in the solar system — bigger than the planet Mercury.' },
+    { key:'callisto', name:'Callisto', type:'Galilean Moon', color:0x8a8076, radius:0.25, orbit:5.6, periodDays:16.7,
+      desc:'Jupiter\'s heavily cratered outermost large moon, among the oldest surfaces in the solar system.' },
+  ],
+  saturn: [
+    { key:'titan', name:'Titan', type:'Major Moon', color:0xe0b659, radius:0.26, orbit:4.2, periodDays:15.9,
+      desc:'Saturn\'s largest moon — the only moon with a dense atmosphere and liquid methane lakes.' },
+    { key:'rhea', name:'Rhea', type:'Major Moon', color:0xc9c2b8, radius:0.14, orbit:3.2, periodDays:4.5,
+      desc:'Saturn\'s second-largest moon, a heavily cratered icy world.' },
+    { key:'enceladus', name:'Enceladus', type:'Major Moon', color:0xeaf2f5, radius:0.09, orbit:2.5, periodDays:1.37,
+      desc:'A small icy moon erupting water-ice geysers from a hidden subsurface ocean.' },
+  ],
+  uranus: [
+    { key:'titania', name:'Titania', type:'Major Moon', color:0xb0aab5, radius:0.15, orbit:3.0, periodDays:8.7,
+      desc:'Uranus\' largest moon, a icy-rocky world with canyons larger than Earth\'s Grand Canyon.' },
+    { key:'oberon', name:'Oberon', type:'Major Moon', color:0xa49e9c, radius:0.14, orbit:3.8, periodDays:13.5,
+      desc:'Uranus\' second-largest and outermost major moon.' },
+  ],
+  neptune: [
+    { key:'triton', name:'Triton', type:'Major Moon', color:0xcfd8da, radius:0.2, orbit:2.8, periodDays:5.88,
+      desc:'A captured Kuiper Belt object orbiting backwards — geologically active with nitrogen-ice geysers.' },
+  ],
+};
+
+// Real orbital elements (heliocentric, J2000-ish, ecliptic-flattened for visualization).
+// a = semi-major axis (AU), e = eccentricity, period = orbital period (years),
+// epoch = a real past perihelion date used as the reference point for Kepler's equation.
+// sceneA = visual semi-major axis (scene units) — compressed so wildly elongated
+// long-period comets stay on-screen; orbital SHAPE/MOTION/DATES are still computed
+// from the real a/e/period/epoch, only the display scale is artistic.
+const COMETS = [
+  { key:'halley', name: "Halley's Comet", designation:'1P/Halley', a:17.8, e:0.967, period:75.32,
+    epoch:'1986-02-09', sceneA:140, omega: 30, color:0xbfe9ff,
+    desc:'The most famous periodic comet, visible to the naked eye every ~76 years. Last seen 1986, returns 2061.' },
+  { key:'encke', name:'Comet Encke', designation:'2P/Encke', a:2.22, e:0.848, period:3.30,
+    epoch:'2023-10-22', sceneA:55, omega: 160, color:0xffd9a0,
+    desc:'The shortest known orbital period of any comet at 3.3 years — observed on more returns than any other.' },
+  { key:'67p', name:'67P/Churyumov–Gerasimenko', designation:'67P', a:3.46, e:0.641, period:6.44,
+    epoch:'2021-11-02', sceneA:80, omega: 280, color:0xc7ffb0,
+    desc:'Target of ESA\'s Rosetta mission (2014–2016) — the first spacecraft to orbit and land on a comet.' },
+  { key:'neowise', name:'Comet NEOWISE', designation:'C/2020 F3', a:358, e:0.999, period:6800,
+    epoch:'2020-07-03', sceneA:200, omega: 90, color:0xffb0d9,
+    desc:'A long-period comet that dazzled naked-eye observers in 2020. Won\'t return for roughly 6,800 years.' },
+];
+
+// Solve Kepler's equation M = E - e·sin(E) for eccentric anomaly E via Newton-Raphson.
+function solveKepler(M, e) {
+  let E = M;
+  for (let i = 0; i < 8; i++) E -= (E - e * Math.sin(E) - M) / (1 - e * Math.cos(E));
+  return E;
+}
+
+// Position (scene-space x,z + real heliocentric distance r in AU) for a comet right now.
+function cometPositionNow(comet, now) {
+  const epochMs = new Date(comet.epoch).getTime();
+  const periodDays = comet.period * 365.25;
+  const n = (2 * Math.PI) / periodDays; // mean motion, rad/day
+  const daysSincePerihelion = (now.getTime() - epochMs) / 86400000;
+  const M = (((daysSincePerihelion * n) % (2*Math.PI)) + 2*Math.PI) % (2*Math.PI);
+  const E = solveKepler(M, comet.e);
+  const nu = 2 * Math.atan2(Math.sqrt(1+comet.e) * Math.sin(E/2), Math.sqrt(1-comet.e) * Math.cos(E/2));
+  const rAU = comet.a * (1 - comet.e * Math.cos(E));
+  const rScene = comet.sceneA * (1 - comet.e * Math.cos(E));
+  const angle = nu + (comet.omega * Math.PI/180);
+  return { x: Math.cos(angle) * rScene, z: Math.sin(angle) * rScene, rAU };
+}
+
+// Next time the comet's heliocentric distance crosses Earth's orbit (~1 AU) —
+// i.e. the next date it's at the same distance from the Sun as Earth.
+function nextEarthOrbitCrossing(comet, now) {
+  const q = comet.a * (1 - comet.e), Q = comet.a * (1 + comet.e);
+  if (1 < q || 1 > Q) return null; // orbit never reaches 1 AU
+  const periodDays = comet.period * 365.25;
+  const n = (2 * Math.PI) / periodDays;
+  const cosNu = Math.max(-1, Math.min(1, (comet.a * (1 - comet.e*comet.e) / 1 - 1) / comet.e));
+  const nu0 = Math.acos(cosNu);
+  const epochMs = new Date(comet.epoch).getTime();
+
+  const datesForSign = (nu) => {
+    const E = 2 * Math.atan2(Math.sqrt(1-comet.e) * Math.sin(nu/2), Math.sqrt(1+comet.e) * Math.cos(nu/2));
+    const M = E - comet.e * Math.sin(E);
+    const daysFromPerihelion = M / n;
+    let t = epochMs + daysFromPerihelion * 86400000;
+    // walk forward by whole periods until this lands after "now"
+    const periodMs = periodDays * 86400000;
+    while (t < now.getTime()) t += periodMs;
+    return t;
+  };
+
+  const t1 = datesForSign(nu0);
+  const t2 = datesForSign(-nu0);
+  return new Date(Math.min(t1, t2));
+}
+
 let solarScene, solarCamera, solarRenderer, solarControls;
-let planetMeshes = [], orbitGroup, simRunning = true, timeWarp = 40, solarInited = false;
+let planetMeshes = [], cometMeshes = [], moonMeshes = [], orbitGroup, simRunning = true, timeWarp = 40, solarInited = false;
+let selectedBody = null, cameraFly = null;
+
+function easeInOutCubic(t) { return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2, 3)/2; }
+
+function flyCameraTo(targetPos, viewDistance) {
+  // Always fly to a fixed, predictable "3/4 above" viewing angle rather than reusing
+  // whatever offset the camera happened to have from a previous selection — guarantees
+  // every body is framed cleanly and consistently, with no dependence on drift/history.
+  const dir = new THREE.Vector3(0.55, 0.62, 1).normalize().multiplyScalar(viewDistance);
+  cameraFly = {
+    fromCam: solarCamera.position.clone(), toCam: targetPos.clone().add(dir),
+    fromTarget: solarControls.target.clone(), toTarget: targetPos.clone(),
+    start: performance.now(), duration: 700,
+  };
+}
+
+function highlightOrbit(selected) {
+  [...planetMeshes, ...cometMeshes, ...moonMeshes].forEach(b => {
+    if (!b.orbitLine) return;
+    const isSelected = selected && b === selected;
+    b.orbitLine.material.opacity = isSelected ? 0.95 : (selected ? b.baseOpacity * 0.25 : b.baseOpacity);
+    b.orbitLine.material.color.set(isSelected ? 0x00F5D4 : b.baseColor);
+  });
+}
+
+function selectBody(body) {
+  selectedBody = body;
+  highlightOrbit(body);
+  const worldPos = new THREE.Vector3();
+  body.mesh.getWorldPosition(worldPos);
+  body.lastWorldPos = worldPos.clone(); // camera tracks the body frame-to-frame from here on, since planets/comets keep orbiting
+  const d = body.data;
+  const isComet = !!d.isComet || cometMeshes.includes(body);
+  const isMoon = !!d.isMoon || moonMeshes.includes(body);
+  const radius = d.radius || 4.2;
+  flyCameraTo(worldPos, Math.max(radius * 9, isMoon ? 3 : 10));
+
+  const panel = document.getElementById('bodyDetailPanel');
+  panel.classList.add('open');
+  document.getElementById('bd-name').textContent = body === planetMeshes[0] ? 'Sun' : d.name;
+  document.getElementById('bd-type').textContent = body === planetMeshes[0] ? 'G-Type Star' : (d.type || (isComet ? `Comet (${d.designation})` : ''));
+
+  const statsEl = document.getElementById('bd-stats');
+  if (isComet) {
+    const now = new Date();
+    const pos = cometPositionNow(d, now);
+    const crossing = nextEarthOrbitCrossing(d, now);
+    document.getElementById('bd-desc').textContent = d.desc;
+    statsEl.innerHTML = `
+      <div class="body-detail-stat"><span>Distance from Sun</span><span>${pos.rAU.toFixed(2)} AU</span></div>
+      <div class="body-detail-stat"><span>Orbital Period</span><span>${d.period.toLocaleString()} years</span></div>
+      <div class="body-detail-stat"><span>Eccentricity</span><span>${d.e}</span></div>
+      <div class="body-detail-stat"><span>Last Perihelion</span><span>${d.epoch}</span></div>
+      <div class="body-detail-stat"><span>Next Earth-Orbit Crossing</span><span>${crossing ? crossing.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'}) : 'Never (orbit too distant)'}</span></div>`;
+  } else if (isMoon) {
+    document.getElementById('bd-desc').textContent = d.desc;
+    statsEl.innerHTML = `
+      <div class="body-detail-stat"><span>Orbits</span><span>${d.parentPlanet}</span></div>
+      <div class="body-detail-stat"><span>Orbital Period</span><span>${d.periodDays < 1 ? Math.round(d.periodDays*24)+' hours' : d.periodDays+' days'}</span></div>`;
+  } else if (body === planetMeshes[0]) {
+    document.getElementById('bd-desc').textContent = d.desc;
+    statsEl.innerHTML = `<div class="body-detail-stat"><span>Diameter</span><span>1,391,000 km</span></div>
+      <div class="body-detail-stat"><span>Orbiting Bodies</span><span>8 planets</span></div>`;
+  } else {
+    document.getElementById('bd-desc').textContent = d.desc;
+    const moonCount = MOONS[d.key] ? MOONS[d.key].length : 0;
+    statsEl.innerHTML = `
+      <div class="body-detail-stat"><span>Orbital Period</span><span>${d.period} ${d.period===1?'Earth year':'Earth years'}</span></div>
+      <div class="body-detail-stat"><span>Rotation Period</span><span>${Math.abs(d.spinDays) < 1 ? Math.round(Math.abs(d.spinDays)*24)+' hours' : Math.abs(d.spinDays)+' days'}${d.spinDays<0?' (retrograde)':''}</span></div>
+      <div class="body-detail-stat"><span>Relative Orbit Radius</span><span>${d.orbit} units</span></div>
+      ${moonCount ? `<div class="body-detail-stat"><span>Moons Shown</span><span>${moonCount}</span></div>` : ''}`;
+  }
+
+  document.querySelectorAll('.body-pill').forEach(el => el.classList.toggle('active', el.dataset.key === d.key));
+}
+
+function deselectBody() {
+  selectedBody = null;
+  highlightOrbit(null);
+  document.getElementById('bodyDetailPanel').classList.remove('open');
+  document.querySelectorAll('.body-pill').forEach(el => el.classList.remove('active'));
+}
 
 function initSolarSystem() {
   const wrap = document.getElementById('solarCanvasWrap');
@@ -441,11 +656,14 @@ function initSolarSystem() {
   orbitGroup = new THREE.Group();
   solarScene.add(orbitGroup);
   planetMeshes = [{ mesh: sunMesh, pivot: null, data: sunMesh.userData }];
+  moonMeshes = [];
 
   PLANETS.forEach(p => {
     const orbitCurve = new THREE.EllipseCurve(0,0, p.orbit, p.orbit, 0, 2*Math.PI, false, 0);
     const pts = orbitCurve.getPoints(128).map(pt => new THREE.Vector3(pt.x,0,pt.y));
-    orbitGroup.add(new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: 0x7B2FBE, transparent:true, opacity:0.25 })));
+    const orbitLine = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts),
+      new THREE.LineBasicMaterial({ color: 0xa899ff, transparent:true, opacity:0.55 }));
+    orbitGroup.add(orbitLine);
 
     const pivot = new THREE.Object3D();
     pivot.rotation.y = Math.random()*Math.PI*2;
@@ -463,7 +681,70 @@ function initSolarSystem() {
       ring.rotation.x = Math.PI/2 - 0.4;
       mesh.add(ring);
     }
-    planetMeshes.push({ pivot, mesh, data:p });
+    planetMeshes.push({ pivot, mesh, data:p, orbitLine, baseOpacity:0.55, baseColor:0xa899ff });
+
+    // MOONS / SATELLITES — orbit the planet's position in the sun-orbit pivot,
+    // independent of the planet's own spin so they don't get dragged by it.
+    const moonList = MOONS[p.key];
+    if (moonList) {
+      const moonGroup = new THREE.Object3D();
+      moonGroup.position.copy(mesh.position);
+      pivot.add(moonGroup);
+      moonList.forEach(m => {
+        const moonOrbitPts = new THREE.EllipseCurve(0,0, m.orbit, m.orbit, 0, 2*Math.PI, false, 0)
+          .getPoints(48).map(pt => new THREE.Vector3(pt.x,0,pt.y));
+        const moonOrbitLine = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(moonOrbitPts),
+          new THREE.LineBasicMaterial({ color: 0x8888bb, transparent:true, opacity:0.35 }));
+        moonGroup.add(moonOrbitLine);
+
+        const moonPivot = new THREE.Object3D();
+        moonPivot.rotation.y = Math.random()*Math.PI*2;
+        moonGroup.add(moonPivot);
+
+        const moonMesh = new THREE.Mesh(new THREE.SphereGeometry(m.radius, 16, 16),
+          new THREE.MeshStandardMaterial({ color: m.color, roughness:0.8, emissive:m.color, emissiveIntensity:0.06 }));
+        const moonUserData = { key: `${p.key}-${m.key}`, name: m.name, type: `${m.type} of ${p.name}`, desc: m.desc, orbit: m.orbit, periodDays: m.periodDays, radius: m.radius, isMoon: true, parentPlanet: p.name };
+        moonMesh.userData = moonUserData;
+
+        // Moons render tiny (down to ~0.05 units) — a real-size hit target is nearly
+        // impossible to hover/click. Wrap each in an invisible, much larger sphere used
+        // only for raycasting, so selecting a moon is actually feasible at any zoom level.
+        const moonHitMesh = new THREE.Mesh(new THREE.SphereGeometry(Math.max(m.radius * 4, 0.55), 8, 8),
+          new THREE.MeshBasicMaterial({ transparent:true, opacity:0, depthWrite:false }));
+        moonHitMesh.userData = moonUserData;
+        moonHitMesh.position.x = m.orbit;
+        moonHitMesh.add(moonMesh);
+        moonPivot.add(moonHitMesh);
+
+        moonMeshes.push({ pivot: moonPivot, mesh: moonHitMesh, data: moonUserData, orbitLine: moonOrbitLine, baseOpacity:0.35, baseColor:0x8888bb, periodDays: m.periodDays });
+      });
+    }
+  });
+
+  // COMETS — true Keplerian ellipses (offset from focus), real-time position
+  cometMeshes = [];
+  COMETS.forEach(c => {
+    const b = c.sceneA * Math.sqrt(1 - c.e*c.e);     // semi-minor axis
+    const focusOffset = c.sceneA * c.e;               // Sun sits at the ellipse focus, not center
+    const omegaRad = c.omega * Math.PI/180;
+    const orbitCurve = new THREE.EllipseCurve(-focusOffset, 0, c.sceneA, b, 0, 2*Math.PI, false, 0);
+    const pts = orbitCurve.getPoints(160).map(pt => {
+      const x = pt.x*Math.cos(omegaRad) - pt.y*Math.sin(omegaRad);
+      const z = pt.x*Math.sin(omegaRad) + pt.y*Math.cos(omegaRad);
+      return new THREE.Vector3(x, 0, z);
+    });
+    const orbitLine = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts),
+      new THREE.LineBasicMaterial({ color: c.color, transparent:true, opacity:0.45 }));
+    orbitGroup.add(orbitLine);
+
+    const mesh = new THREE.Mesh(new THREE.SphereGeometry(0.55, 16, 16),
+      new THREE.MeshBasicMaterial({ color: c.color }));
+    const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: makeGlowTexture(), color: c.color, transparent: true, opacity: 0.6, depthWrite:false }));
+    glow.scale.set(6,6,1);
+    mesh.add(glow);
+    mesh.userData = { key: c.key, name: c.name, type: `Comet (${c.designation})`, isComet: true, comet: c };
+    solarScene.add(mesh);
+    cometMeshes.push({ mesh, data: c, orbitLine, baseOpacity:0.45, baseColor:c.color });
   });
 
   buildBodyPills();
@@ -476,12 +757,22 @@ function initSolarSystem() {
     mouse.x = ((e.clientX-rect.left)/rect.width)*2-1;
     mouse.y = -((e.clientY-rect.top)/rect.height)*2+1;
     raycaster.setFromCamera(mouse, solarCamera);
-    const hits = raycaster.intersectObjects(planetMeshes.map(p=>p.mesh));
+    const hits = raycaster.intersectObjects([...planetMeshes.map(p=>p.mesh), ...cometMeshes.map(c=>c.mesh), ...moonMeshes.map(m=>m.mesh)]);
     if (hits.length) {
       const d = hits[0].object.userData;
       hoveredKey = d.key;
       document.querySelectorAll('.body-pill').forEach(el => el.classList.toggle('active', el.dataset.key===d.key));
-      showTooltip(e.clientX, e.clientY, d.name, d.type, d.desc);
+      if (d.isComet) {
+        const crossing = nextEarthOrbitCrossing(d.comet, new Date());
+        const pos = cometPositionNow(d.comet, new Date());
+        const crossingTxt = crossing
+          ? `Next crosses Earth's orbit (~1 AU from Sun): ${crossing.toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'})} ${crossing.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'})}`
+          : 'Orbit never reaches Earth\'s distance from the Sun.';
+        showTooltip(e.clientX, e.clientY, d.name, d.type,
+          `${d.comet.desc}\nCurrently ${pos.rAU.toFixed(2)} AU from the Sun.\n${crossingTxt}`);
+      } else {
+        showTooltip(e.clientX, e.clientY, d.name, d.type, d.desc);
+      }
       solarRenderer.domElement.style.cursor = 'pointer';
     } else if (hoveredKey) {
       hoveredKey = null;
@@ -491,6 +782,24 @@ function initSolarSystem() {
     }
   });
   solarRenderer.domElement.addEventListener('mouseleave', hideTooltip);
+
+  // CLICK — zoom in on the body, pin its detail panel open, highlight its orbit trail
+  solarRenderer.domElement.addEventListener('click', (e) => {
+    const rect = solarRenderer.domElement.getBoundingClientRect();
+    mouse.x = ((e.clientX-rect.left)/rect.width)*2-1;
+    mouse.y = -((e.clientY-rect.top)/rect.height)*2+1;
+    raycaster.setFromCamera(mouse, solarCamera);
+    const allBodies = [...planetMeshes, ...cometMeshes, ...moonMeshes];
+    const hits = raycaster.intersectObjects(allBodies.map(b=>b.mesh));
+    if (hits.length) {
+      const body = allBodies.find(b => b.mesh === hits[0].object);
+      selectBody(body);
+    } else {
+      deselectBody();
+    }
+  });
+
+  document.getElementById('bodyDetailClose').addEventListener('click', deselectBody);
 
   document.getElementById('simPause').addEventListener('click', () => {
     simRunning = !simRunning;
@@ -517,15 +826,60 @@ function makeGlowTexture() {
 function buildBodyPills() {
   const sunPill = `<div class="body-pill" data-key="sun">☀ Sun</div>`;
   const list = PLANETS.map(p => `<div class="body-pill" data-key="${p.key}">${p.name}</div>`).join('');
-  document.getElementById('bodyPills').innerHTML = sunPill + list;
+  const cometList = COMETS.map(c => `<div class="body-pill comet-pill" data-key="${c.key}">☄ ${c.name}</div>`).join('');
+  document.getElementById('bodyPills').innerHTML = sunPill + list + cometList;
+  document.querySelectorAll('.body-pill').forEach(el => {
+    el.addEventListener('click', () => {
+      const body = [...planetMeshes, ...cometMeshes].find(b => (b.data.key || 'sun') === el.dataset.key);
+      if (body) selectBody(body);
+    });
+  });
 }
+
+const TWO_PI = Math.PI * 2;
+function wrapAngle(obj) { obj.rotation.y = obj.rotation.y % TWO_PI; } // keeps trig precision stable over long sessions
 
 function animateSolar() {
   requestAnimationFrame(animateSolar);
   if (simRunning) {
-    planetMeshes.forEach(({pivot, data}) => { if (pivot) pivot.rotation.y += (0.02/(data.period||1)) * (timeWarp/40); });
-    planetMeshes.forEach(({mesh}) => { mesh.rotation.y += 0.01; });
+    planetMeshes.forEach(({pivot, data}) => { if (pivot) { pivot.rotation.y += (0.02/(data.period||1)) * (timeWarp/40); wrapAngle(pivot); } });
+    // Self-rotation (spin) now uses each planet's REAL relative day length, so Mercury/Venus
+    // visibly crawl, Earth/Mars spin at a comparable clip, the gas giants whip around fast,
+    // and Venus/Uranus spin backwards (retrograde) — instead of one flat rate for everyone.
+    planetMeshes.forEach(({mesh, data}) => {
+      if (!data.spinDays) return; // sun has no spinDays — leave it static
+      const spinSpeed = (0.045 / Math.abs(data.spinDays)) * Math.sign(data.spinDays) * (timeWarp/40);
+      mesh.rotation.y += spinSpeed;
+      wrapAngle(mesh);
+    });
+    moonMeshes.forEach(({ pivot, periodDays }) => { pivot.rotation.y += (0.6/periodDays) * (timeWarp/40); wrapAngle(pivot); });
   }
+  // Comets always reflect their REAL current position (true real-time, not time-warped)
+  const now = new Date();
+  cometMeshes.forEach(({ mesh, data }) => {
+    const pos = cometPositionNow(data, now);
+    mesh.position.set(pos.x, 0, pos.z);
+  });
+
+  if (cameraFly) {
+    const t = Math.min(1, (performance.now() - cameraFly.start) / cameraFly.duration);
+    const eased = easeInOutCubic(t);
+    solarCamera.position.lerpVectors(cameraFly.fromCam, cameraFly.toCam, eased);
+    solarControls.target.lerpVectors(cameraFly.fromTarget, cameraFly.toTarget, eased);
+    if (t >= 1) { cameraFly = null; if (selectedBody) selectedBody.mesh.getWorldPosition(selectedBody.lastWorldPos); }
+  } else if (selectedBody) {
+    // Selected body keeps orbiting — translate camera + target by its frame-to-frame
+    // delta so the lock-on follows smoothly without snapping the view.
+    const liveWorldPos = new THREE.Vector3();
+    selectedBody.mesh.getWorldPosition(liveWorldPos);
+    const delta = liveWorldPos.clone().sub(selectedBody.lastWorldPos);
+    if (delta.lengthSq() > 0) {
+      solarCamera.position.add(delta);
+      solarControls.target.add(delta);
+    }
+    selectedBody.lastWorldPos.copy(liveWorldPos);
+  }
+
   solarControls.update();
   solarRenderer.render(solarScene, solarCamera);
 }
@@ -706,4 +1060,319 @@ function drawConstellation(c) {
   const scale = Math.min(w/baseW, h/baseH) * 0.85;
   const offY = (h - baseH*scale)/2;
   constCtx.fillText(c.name.toUpperCase(), w/2, offY + baseH*scale + 24);
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// GALAXY (Canvas 2D — Milky Way spiral, hover regions)
+// ══════════════════════════════════════════════════════════════════════════
+const GALAXY_REGIONS = [
+  { key:'core', name:'Galactic Core', type:'Sagittarius A* · Supermassive Black Hole', rNorm:0.04, labelAngle:-2.35,
+    desc:'A 4-million-solar-mass black hole anchors the center of the Milky Way, ~26,000 light-years from Earth.' },
+  { key:'bar', name:'Central Bar', type:'Stellar Bar', rNorm:0.16, labelAngle:-1.75,
+    desc:'A dense bar of older stars stretches across the galactic center, funneling gas inward and shaping the spiral arms.' },
+  { key:'orion-arm', name:'Orion Arm', type:'Minor Spiral Arm — You Are Here', rNorm:0.42, labelAngle:-1.15,
+    desc:'A minor spiral arm (also called the Local Arm) between the larger Sagittarius and Perseus arms — home to the Sun and Earth.' },
+  { key:'perseus-arm', name:'Perseus Arm', type:'Major Spiral Arm', rNorm:0.62, labelAngle:-0.55,
+    desc:'One of the Milky Way\'s prominent spiral arms, rich in young star-forming regions and nebulae.' },
+  { key:'halo', name:'Galactic Halo', type:'Globular Cluster Halo', rNorm:0.92, labelAngle:0.05,
+    desc:'A sparse, roughly spherical region of old stars and globular clusters surrounding the entire galactic disk.' },
+];
+
+let galaxyCtx, galaxyParticles = [], galaxyHoverKey = null, galaxyRotation = 0;
+
+function initGalaxy() {
+  const canvasEl = document.getElementById('galaxyCanvas');
+  galaxyCtx = canvasEl.getContext('2d');
+  onGalaxyResize();
+
+  const NUM_ARMS = 4, PARTICLES_PER_ARM = 700;
+  galaxyParticles = [];
+  for (let arm = 0; arm < NUM_ARMS; arm++) {
+    const armOffset = (arm / NUM_ARMS) * Math.PI * 2;
+    for (let i = 0; i < PARTICLES_PER_ARM; i++) {
+      const t = i / PARTICLES_PER_ARM;
+      const rNorm = 0.03 + t * 0.95;
+      const angle = armOffset + t * Math.PI * 2.6 + (Math.random()-0.5) * 0.45;
+      const jitter = (Math.random()-0.5) * 0.06 * (1 - t * 0.5);
+      galaxyParticles.push({
+        rNorm: rNorm + jitter,
+        angle,
+        size: Math.random() * 1.6 + 0.3,
+        hue: rNorm < 0.15 ? '255,215,0' : rNorm < 0.5 ? '232,232,255' : '155,200,255',
+        twinkle: Math.random() * Math.PI * 2,
+      });
+    }
+  }
+
+  canvasEl.addEventListener('mousemove', (e) => {
+    const rect = canvasEl.getBoundingClientRect();
+    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+    const cx = canvasEl.width/2, cy = canvasEl.height/2;
+    const maxR = Math.min(canvasEl.width, canvasEl.height) * 0.46;
+    const dist = Math.hypot(mx-cx, my-cy) / maxR;
+    let hit = null;
+    for (const region of GALAXY_REGIONS) {
+      if (Math.abs(dist - region.rNorm) < 0.045) { hit = region; break; }
+    }
+    if (hit) {
+      galaxyHoverKey = hit.key;
+      showTooltip(e.clientX, e.clientY, hit.name, hit.type, hit.desc);
+      canvasEl.style.cursor = 'pointer';
+    } else if (galaxyHoverKey) {
+      galaxyHoverKey = null; hideTooltip(); canvasEl.style.cursor = 'default';
+    }
+  });
+  canvasEl.addEventListener('mouseleave', () => { galaxyHoverKey = null; hideTooltip(); });
+
+  window.addEventListener('resize', onGalaxyResize);
+  animateGalaxy();
+}
+
+function onGalaxyResize() {
+  const wrap = document.getElementById('galaxyCanvasWrap');
+  const canvasEl = document.getElementById('galaxyCanvas');
+  if (!wrap || !canvasEl) return;
+  const w = wrap.clientWidth, h = wrap.clientHeight;
+  if (!w || !h) return;
+  canvasEl.width = w; canvasEl.height = h;
+}
+
+function animateGalaxy() {
+  requestAnimationFrame(animateGalaxy);
+  if (!galaxyCtx || !document.getElementById('view-home').classList.contains('active')) return;
+  const canvasEl = document.getElementById('galaxyCanvas');
+  const w = canvasEl.width, h = canvasEl.height;
+  if (!w || !h) return;
+  galaxyCtx.clearRect(0,0,w,h);
+  galaxyRotation += 0.0006;
+
+  const cx = w/2, cy = h/2;
+  const maxR = Math.min(w,h) * 0.46;
+  const t = Date.now()/1000;
+
+  galaxyParticles.forEach(p => {
+    const a = p.angle + galaxyRotation;
+    const r = p.rNorm * maxR;
+    const x = cx + Math.cos(a) * r;
+    const y = cy + Math.sin(a) * r * 0.42; // flatten into a disk perspective
+    const tw = 0.5 + 0.5 * Math.sin(t*0.6 + p.twinkle);
+    galaxyCtx.beginPath();
+    galaxyCtx.arc(x, y, p.size, 0, Math.PI*2);
+    galaxyCtx.fillStyle = `rgba(${p.hue},${0.3 + tw*0.5})`;
+    galaxyCtx.fill();
+  });
+
+  // core glow
+  const coreGlow = galaxyCtx.createRadialGradient(cx,cy,0,cx,cy, maxR*0.18);
+  coreGlow.addColorStop(0, 'rgba(255,235,180,0.9)');
+  coreGlow.addColorStop(1, 'rgba(255,215,0,0)');
+  galaxyCtx.fillStyle = coreGlow;
+  galaxyCtx.beginPath(); galaxyCtx.arc(cx,cy,maxR*0.18,0,Math.PI*2); galaxyCtx.fill();
+
+  // region guide rings + fanned-out labels (each at its own angle + min radius so they never stack)
+  const minLabelR = maxR * 0.58;
+  GALAXY_REGIONS.forEach(region => {
+    const r = region.rNorm * maxR;
+    const isHover = region.key === galaxyHoverKey;
+    galaxyCtx.beginPath();
+    galaxyCtx.ellipse(cx, cy, r, r*0.42, 0, 0, Math.PI*2);
+    galaxyCtx.strokeStyle = isHover ? 'rgba(0,245,212,0.9)' : 'rgba(180,140,255,0.45)';
+    galaxyCtx.lineWidth = isHover ? 2.5 : 1.5;
+    galaxyCtx.stroke();
+
+    // ring-edge point this label refers to, vs. the label's own (fanned-out) position
+    const ringX = cx + Math.cos(region.labelAngle) * r, ringY = cy + Math.sin(region.labelAngle) * r * 0.42;
+    const labelR = Math.max(r, minLabelR);
+    let lx = cx + Math.cos(region.labelAngle) * labelR, ly = cy + Math.sin(region.labelAngle) * labelR * 0.42;
+
+    // thin connector from ring to its label when they're pushed apart
+    if (labelR > r + 4) {
+      galaxyCtx.beginPath();
+      galaxyCtx.moveTo(ringX, ringY); galaxyCtx.lineTo(lx, ly);
+      galaxyCtx.strokeStyle = isHover ? 'rgba(0,245,212,0.5)' : 'rgba(180,140,255,0.3)';
+      galaxyCtx.lineWidth = 1;
+      galaxyCtx.stroke();
+    }
+
+    const label = region.name.toUpperCase();
+    galaxyCtx.font = isHover ? 'bold 13px "Space Mono", monospace' : 'bold 12px "Space Mono", monospace';
+    const metrics = galaxyCtx.measureText(label);
+    lx = Math.min(Math.max(lx, 10), w - metrics.width - 10); // keep pill on-canvas (text is left-aligned from lx)
+    galaxyCtx.fillStyle = isHover ? 'rgba(0,245,212,0.22)' : 'rgba(10,10,26,0.78)';
+    galaxyCtx.fillRect(lx - 6, ly - 12, metrics.width + 12, 18);
+    galaxyCtx.fillStyle = isHover ? '#00F5D4' : '#E8E8FF';
+    galaxyCtx.textAlign = 'left';
+    galaxyCtx.fillText(label, lx, ly + 2);
+
+    if (region.key === 'orion-arm') {
+      const a = -galaxyRotation * 0.3;
+      const sx = cx + Math.cos(a) * r, sy = cy + Math.sin(a) * r * 0.42;
+      galaxyCtx.beginPath(); galaxyCtx.arc(sx, sy, 4.5, 0, Math.PI*2);
+      galaxyCtx.fillStyle = '#00F5D4'; galaxyCtx.shadowColor = '#00F5D4'; galaxyCtx.shadowBlur = 16;
+      galaxyCtx.fill(); galaxyCtx.shadowBlur = 0;
+      const sunLabel = '☉ YOU ARE HERE';
+      galaxyCtx.font = 'bold 10px "Space Mono", monospace';
+      const sunMetrics = galaxyCtx.measureText(sunLabel);
+      galaxyCtx.fillStyle = 'rgba(10,10,26,0.78)';
+      galaxyCtx.fillRect(sx - sunMetrics.width/2 - 5, sy - 26, sunMetrics.width + 10, 16);
+      galaxyCtx.fillStyle = '#00F5D4';
+      galaxyCtx.textAlign = 'center';
+      galaxyCtx.fillText(sunLabel, sx, sy - 14);
+    }
+  });
+
+  galaxyCtx.font = 'bold 12px "Space Mono", monospace';
+  galaxyCtx.fillStyle = '#E8E8FF';
+  galaxyCtx.textAlign = 'center';
+  const caption = 'MILKY WAY — ~100,000 LY DIAMETER · ~100–400 BILLION STARS';
+  const capW = galaxyCtx.measureText(caption).width;
+  galaxyCtx.fillStyle = 'rgba(10,10,26,0.8)';
+  galaxyCtx.fillRect(cx - capW/2 - 10, cy + maxR*0.42 + 16, capW + 20, 22);
+  galaxyCtx.fillStyle = '#E8E8FF';
+  galaxyCtx.fillText(caption, cx, cy + maxR*0.42 + 31);
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// UNIVERSE (Canvas 2D — cosmic scale rings, hover regions)
+// ══════════════════════════════════════════════════════════════════════════
+const COSMIC_SCALES = [
+  { key:'solar-system', name:'Solar System', type:'~1 light-day across', rNorm:0.12,
+    desc:'The Sun and its eight planets — vanishingly small at this scale, but home.' },
+  { key:'local-bubble', name:'Local Bubble', type:'~1,000 light-years across', rNorm:0.28,
+    desc:'A low-density cavity in the interstellar medium, carved by ancient supernovae, that the Sun currently drifts through.' },
+  { key:'milky-way', name:'Milky Way Galaxy', type:'~100,000 light-years across', rNorm:0.46,
+    desc:'Our home galaxy — one of an estimated 2 trillion galaxies in the observable universe.' },
+  { key:'local-group', name:'Local Group', type:'~10 million light-years across', rNorm:0.64,
+    desc:'A gravitationally bound group of ~80 galaxies including the Milky Way, Andromeda, and Triangulum.' },
+  { key:'virgo-supercluster', name:'Virgo Supercluster', type:'~110 million light-years across', rNorm:0.82,
+    desc:'A vast supercluster of galaxy groups, including the Local Group, all loosely bound by gravity.' },
+  { key:'observable-universe', name:'Observable Universe', type:'~93 billion light-years across', rNorm:0.98,
+    desc:'The full extent of space we can observe from Earth, containing an estimated 2 trillion galaxies.' },
+];
+
+let universeCtx, universeHoverKey = null, universeStars = [];
+
+function initUniverse() {
+  const canvasEl = document.getElementById('universeCanvas');
+  universeCtx = canvasEl.getContext('2d');
+  onUniverseResize();
+
+  canvasEl.addEventListener('mousemove', (e) => {
+    const rect = canvasEl.getBoundingClientRect();
+    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+    const cx = canvasEl.width/2, cy = canvasEl.height/2;
+    const maxR = Math.min(canvasEl.width, canvasEl.height) * 0.46;
+    const dist = Math.hypot(mx-cx, my-cy) / maxR;
+    let hit = null;
+    for (const scale of COSMIC_SCALES) {
+      if (Math.abs(dist - scale.rNorm) < 0.035) { hit = scale; break; }
+    }
+    if (hit) {
+      universeHoverKey = hit.key;
+      showTooltip(e.clientX, e.clientY, hit.name, hit.type, hit.desc);
+      canvasEl.style.cursor = 'pointer';
+    } else if (universeHoverKey) {
+      universeHoverKey = null; hideTooltip(); canvasEl.style.cursor = 'default';
+    }
+  });
+  canvasEl.addEventListener('mouseleave', () => { universeHoverKey = null; hideTooltip(); });
+
+  window.addEventListener('resize', onUniverseResize);
+  animateUniverse();
+}
+
+function onUniverseResize() {
+  const wrap = document.getElementById('universeCanvasWrap');
+  const canvasEl = document.getElementById('universeCanvas');
+  if (!wrap || !canvasEl) return;
+  const w = wrap.clientWidth, h = wrap.clientHeight;
+  if (!w || !h) return;
+  canvasEl.width = w; canvasEl.height = h;
+  if (universeStars.length === 0) {
+    universeStars = Array.from({length:300}, () => ({
+      x: Math.random()*w, y: Math.random()*h, r: Math.random()*1+0.3, o: Math.random()*0.6+0.1,
+    }));
+  }
+}
+
+function animateUniverse() {
+  requestAnimationFrame(animateUniverse);
+  if (!universeCtx || !document.getElementById('view-home').classList.contains('active')) return;
+  const canvasEl = document.getElementById('universeCanvas');
+  const w = canvasEl.width, h = canvasEl.height;
+  if (!w || !h) return;
+  universeCtx.clearRect(0,0,w,h);
+
+  universeStars.forEach(s => {
+    universeCtx.beginPath(); universeCtx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+    universeCtx.fillStyle = `rgba(232,232,255,${s.o*0.5})`; universeCtx.fill();
+  });
+
+  const cx = w/2, cy = h/2;
+  const maxR = Math.min(w,h) * 0.46;
+  const t = Date.now()/1000;
+
+  COSMIC_SCALES.forEach((scale, i) => {
+    const r = scale.rNorm * maxR;
+    const isHover = scale.key === universeHoverKey;
+    const pulse = isHover ? 0.85 + 0.15*Math.sin(t*4) : 1;
+    universeCtx.beginPath();
+    universeCtx.arc(cx, cy, r * pulse, 0, Math.PI*2);
+    universeCtx.strokeStyle = isHover ? 'rgba(0,245,212,0.95)' : `rgba(180,140,255,${0.35 + i*0.08})`;
+    universeCtx.lineWidth = isHover ? 2.5 : 1.5;
+    universeCtx.stroke();
+
+    // label with a backing pill so it's legible against stars/rings behind it
+    let lx = cx + r*Math.cos(-0.7), ly = cy + r*Math.sin(-0.7);
+    const label = scale.name.toUpperCase();
+    universeCtx.font = isHover ? 'bold 13px "Space Mono", monospace' : 'bold 12px "Space Mono", monospace';
+    const metrics = universeCtx.measureText(label);
+    lx = Math.min(lx, w - metrics.width - 24); // keep the pill on-canvas
+    universeCtx.fillStyle = isHover ? 'rgba(0,245,212,0.22)' : 'rgba(10,10,26,0.78)';
+    universeCtx.fillRect(lx, ly - 13, metrics.width + 14, 20);
+    universeCtx.fillStyle = isHover ? '#00F5D4' : '#E8E8FF';
+    universeCtx.textAlign = 'left';
+    universeCtx.fillText(label, lx + 7, ly + 2);
+  });
+
+  // bright center point — "you are here"
+  const glow = universeCtx.createRadialGradient(cx,cy,0,cx,cy,10);
+  glow.addColorStop(0, 'rgba(255,255,255,1)'); glow.addColorStop(1, 'rgba(0,245,212,0)');
+  universeCtx.fillStyle = glow;
+  universeCtx.beginPath(); universeCtx.arc(cx,cy,10,0,Math.PI*2); universeCtx.fill();
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// DAILY BRIEFING (Astronomy / NASA / Space / Rockets / Bikes headlines)
+// ══════════════════════════════════════════════════════════════════════════
+function timeAgo(iso) {
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const hrs = Math.round(diffMs / 3600000);
+  if (hrs < 1) return 'just now';
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.round(hrs/24)}d ago`;
+}
+
+async function loadBriefing() {
+  const list = document.getElementById('briefingList');
+  try {
+    const res = await fetch('news.json?t=' + Date.now());
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (!data.items || !data.items.length) {
+      list.innerHTML = '<div class="briefing-empty">No headlines yet — run scripts/pull-news.js to populate this.</div>';
+      return;
+    }
+    list.innerHTML = data.items.map((item, i) => `
+      <a class="briefing-item" href="${item.link}" target="_blank" rel="noopener">
+        <div class="briefing-rank">${String(i+1).padStart(2,'0')}</div>
+        <div class="briefing-body">
+          <span class="briefing-cat ${item.category.toLowerCase()}">${item.category}</span>
+          <div class="briefing-title">${item.title}</div>
+          <div class="briefing-meta">${timeAgo(item.pubDate)} · ${new URL(item.link).hostname.replace('www.','')}</div>
+        </div>
+      </a>`).join('');
+  } catch (e) {
+    list.innerHTML = `<div class="briefing-empty">⚠ Failed to load briefing: ${e.message}</div>`;
+  }
 }

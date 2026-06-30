@@ -242,7 +242,7 @@
   }
   #hoverTooltip .tt-name { font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--aurora); letter-spacing: 1px; margin-bottom: 4px; }
   #hoverTooltip .tt-type { font-family: var(--mono); font-size: 8.5px; color: var(--nebula-light); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px; }
-  #hoverTooltip .tt-desc { font-size: 11px; line-height: 1.55; color: var(--star); }
+  #hoverTooltip .tt-desc { font-size: 11px; line-height: 1.55; color: var(--star); white-space: pre-line; }
 
   /* SOLAR */
   #solarCanvasWrap { position: absolute; inset: 0; z-index: 1; }
@@ -255,6 +255,32 @@
   .body-pills { position:absolute; top: 140px; left:50%; transform:translateX(-50%); display:flex; gap:6px; z-index:20; flex-wrap:wrap; max-width: 86%; justify-content:center; }
   .body-pill { font-family: var(--mono); font-size: 9px; letter-spacing:1px; padding: 5px 10px; border-radius: 12px; border: 1px solid var(--border); color: var(--muted); cursor:pointer; background: rgba(10,10,26,0.6); transition: all .2s; text-transform:uppercase; }
   .body-pill:hover, .body-pill.active { border-color: var(--aurora); color: var(--aurora); background: rgba(0,245,212,0.08); }
+  .comet-pill { border-color: rgba(255,176,217,0.3); }
+  .comet-pill:hover, .comet-pill.active { border-color: #ffb0d9; color: #ffb0d9; background: rgba(255,176,217,0.08); }
+
+  /* CLICK-TO-ZOOM DETAIL PANEL */
+  .body-detail-panel {
+    position: absolute; top: 240px; right: 14px; width: 300px; max-height: calc(100% - 280px); overflow-y: auto;
+    background: rgba(10,10,26,0.92); border: 1px solid var(--border-bright); border-radius: 10px;
+    padding: 20px; z-index: 30; backdrop-filter: blur(16px);
+    box-shadow: 0 0 40px rgba(0,245,212,0.15);
+    transform: translateX(120%); opacity: 0; transition: transform .35s cubic-bezier(.2,.8,.2,1), opacity .35s;
+    pointer-events: none;
+  }
+  .body-detail-panel.open { transform: translateX(0); opacity: 1; pointer-events: auto; }
+  .body-detail-close {
+    position: absolute; top: 12px; right: 12px; background: transparent; border: 1px solid var(--border);
+    color: var(--muted); width: 24px; height: 24px; border-radius: 5px; cursor: pointer; font-size: 12px;
+  }
+  .body-detail-close:hover { color: var(--star); border-color: var(--border-bright); }
+  .body-detail-name { font-family: var(--mono); font-size: 18px; font-weight: 700; color: var(--star); margin-bottom: 4px; padding-right: 28px; }
+  .body-detail-type { font-family: var(--mono); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--aurora); margin-bottom: 14px; }
+  .body-detail-desc { font-size: 12.5px; line-height: 1.7; color: var(--star); white-space: pre-line; margin-bottom: 14px; }
+  .body-detail-stats { display: flex; flex-direction: column; gap: 6px; }
+  .body-detail-stat { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border); font-family: var(--mono); font-size: 10px; }
+  .body-detail-stat span:first-child { color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+  .body-detail-stat span:last-child { color: var(--star); text-align: right; }
+  .body-detail-hint { font-family: var(--mono); font-size: 8.5px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-top: 14px; text-align: center; }
 
   /* CONSTELLATIONS */
   #constCanvasWrap { position: absolute; inset: 0; z-index: 1; }
@@ -262,6 +288,32 @@
   .const-pills { position:absolute; top: 140px; left:50%; transform:translateX(-50%); display:flex; gap:6px; z-index:20; flex-wrap:wrap; max-width: 90%; justify-content:center; }
   .const-pill { font-family: var(--mono); font-size: 9px; letter-spacing:1px; padding: 5px 10px; border-radius: 12px; border: 1px solid var(--border); color: var(--muted); cursor:pointer; background: rgba(10,10,26,0.6); transition: all .2s; text-transform:uppercase; }
   .const-pill:hover, .const-pill.active { border-color: var(--nebula-light); color: var(--nebula-light); background: rgba(123,47,190,0.12); }
+
+  /* GALAXY + UNIVERSE */
+  #galaxyCanvasWrap, #universeCanvasWrap { position: absolute; inset: 0; z-index: 1; }
+  #galaxyCanvas, #universeCanvas { display: block; width: 100%; height: 100%; }
+
+  /* DAILY BRIEFING */
+  .briefing-list { display: flex; flex-direction: column; gap: 10px; max-width: 900px; }
+  .briefing-item {
+    display: flex; gap: 14px; align-items: flex-start; padding: 16px 18px; background: var(--card);
+    border: 1px solid var(--border); border-radius: 8px; transition: border-color .2s, transform .15s; text-decoration: none;
+  }
+  .briefing-item:hover { border-color: var(--border-bright); transform: translateX(3px); }
+  .briefing-rank { font-family: var(--mono); font-size: 13px; color: var(--nebula-light); font-weight: 700; width: 24px; flex-shrink: 0; }
+  .briefing-body { flex: 1; min-width: 0; }
+  .briefing-cat {
+    font-family: var(--mono); font-size: 8.5px; letter-spacing: 1.5px; text-transform: uppercase;
+    padding: 2px 8px; border-radius: 10px; display: inline-block; margin-bottom: 6px;
+  }
+  .briefing-cat.nasa { background: rgba(0,245,212,0.15); color: var(--aurora); }
+  .briefing-cat.astronomy { background: rgba(123,47,190,0.2); color: var(--nebula-light); }
+  .briefing-cat.space { background: rgba(27,79,216,0.2); color: #6f95ff; }
+  .briefing-cat.rockets { background: rgba(255,68,102,0.15); color: var(--danger); }
+  .briefing-cat.bikes { background: rgba(255,215,0,0.15); color: var(--gold); }
+  .briefing-title { font-size: 14px; color: var(--star); line-height: 1.4; margin-bottom: 4px; }
+  .briefing-meta { font-family: var(--mono); font-size: 9.5px; color: var(--muted); letter-spacing: 0.5px; }
+  .briefing-empty { font-family: var(--mono); font-size: 11px; color: var(--muted); padding: 20px; }
 
   /* ===================== DASHBOARD VIEW (unchanged styling) ===================== */
   #view-dashboard { padding-top: 56px; }
@@ -390,6 +442,7 @@
   <div class="nav-tabs" id="navTabs">
     <button class="nav-tab active" data-view="home">◈ Explore</button>
     <button class="nav-tab" data-view="dashboard">◈ Dashboard</button>
+    <button class="nav-tab" data-view="briefing">◈ Daily Briefing</button>
   </div>
   <div class="topbar-right">
     <div class="status-pill" id="liveRefreshPill" title="Dashboard auto-refreshes data.json every 30s"><div class="pulse-dot"></div><span id="liveRefreshText">LIVE · SYNCING…</span></div>
@@ -401,7 +454,9 @@
 <div class="scroll-dots" id="scrollDots">
   <div class="scroll-dot active" data-section="0" data-label="Hero"></div>
   <div class="scroll-dot" data-section="1" data-label="Solar System"></div>
-  <div class="scroll-dot" data-section="2" data-label="Constellations"></div>
+  <div class="scroll-dot" data-section="2" data-label="Galaxy"></div>
+  <div class="scroll-dot" data-section="3" data-label="Universe"></div>
+  <div class="scroll-dot" data-section="4" data-label="Constellations"></div>
 </div>
 
 <!-- ===================== VIEW: HOME (single scroll page) ===================== -->
@@ -425,7 +480,7 @@
   <section class="snap-section" id="sec-solar">
     <div class="hud-corner tl"></div><div class="hud-corner tr"></div>
     <div class="hud-corner bl"></div><div class="hud-corner br"></div>
-    <div class="hud-title"><h2>Solar System</h2><p>REAL-TIME ORBITAL SIMULATION — HOVER A WORLD FOR INTEL</p></div>
+    <div class="hud-title"><h2>Solar System</h2><p>REAL-TIME ORBITAL SIMULATION — COMETS SHOWN AT ACTUAL CURRENT POSITION</p></div>
     <div id="solarCanvasWrap"></div>
     <div class="body-pills" id="bodyPills"></div>
     <div class="sim-controls">
@@ -434,9 +489,33 @@
       <input type="range" id="simSpeed" min="0" max="200" value="40">
       <span id="simSpeedVal" style="font-family:var(--mono);font-size:10px;color:var(--aurora)">40x</span>
     </div>
+    <div class="body-detail-panel" id="bodyDetailPanel">
+      <button class="body-detail-close" id="bodyDetailClose">✕</button>
+      <div class="body-detail-name" id="bd-name">—</div>
+      <div class="body-detail-type" id="bd-type">—</div>
+      <div class="body-detail-desc" id="bd-desc">—</div>
+      <div class="body-detail-stats" id="bd-stats"></div>
+      <div class="body-detail-hint">Click anywhere else to deselect</div>
+    </div>
   </section>
 
-  <!-- SECTION 2 — CONSTELLATIONS -->
+  <!-- SECTION 2 — GALAXY -->
+  <section class="snap-section" id="sec-galaxy">
+    <div class="hud-corner tl"></div><div class="hud-corner tr"></div>
+    <div class="hud-corner bl"></div><div class="hud-corner br"></div>
+    <div class="hud-title"><h2>The Milky Way</h2><p>OUR HOME GALAXY — HOVER A REGION FOR INTEL</p></div>
+    <div id="galaxyCanvasWrap"><canvas id="galaxyCanvas"></canvas></div>
+  </section>
+
+  <!-- SECTION 3 — UNIVERSE -->
+  <section class="snap-section" id="sec-universe">
+    <div class="hud-corner tl"></div><div class="hud-corner tr"></div>
+    <div class="hud-corner bl"></div><div class="hud-corner br"></div>
+    <div class="hud-title"><h2>The Observable Universe</h2><p>COSMIC SCALE — HOVER A RING FOR INTEL</p></div>
+    <div id="universeCanvasWrap"><canvas id="universeCanvas"></canvas></div>
+  </section>
+
+  <!-- SECTION 4 — CONSTELLATIONS -->
   <section class="snap-section" id="sec-const">
     <div class="hud-corner tl"></div><div class="hud-corner tr"></div>
     <div class="hud-corner bl"></div><div class="hud-corner br"></div>
@@ -445,6 +524,14 @@
     <div class="const-pills" id="constPills"></div>
   </section>
 
+</div>
+
+<!-- ===================== VIEW: DAILY BRIEFING ===================== -->
+<div class="view" id="view-briefing">
+  <div class="main" style="padding-top:88px">
+    <div class="section-label">◈ DAILY BRIEFING — TOP 10 ACROSS ASTRONOMY · NASA · SPACE · ROCKETS · BIKES</div>
+    <div id="briefingList" class="briefing-list"></div>
+  </div>
 </div>
 
 <!-- ===================== VIEW: DASHBOARD ===================== -->
