@@ -1,8 +1,10 @@
-// ── ASTRONAUT ILLUSTRATION (original SVG, swap with a real <img> if desired) ──
+// ── ASTRONAUT + ANIMATED SOLAR SYSTEM ILLUSTRATION ──────────────────────────
+// An astronaut floating in front of a small, genuinely-orbiting solar system
+// (real SVG <animateTransform> motion, not a static graphic).
 const ASTRONAUT_SVG = `
 <svg viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <radialGradient id="bg" cx="35%" cy="25%" r="75%">
+    <radialGradient id="bg" cx="50%" cy="38%" r="75%">
       <stop offset="0%" stop-color="#1c1c3a"/>
       <stop offset="100%" stop-color="#07070f"/>
     </radialGradient>
@@ -15,40 +17,67 @@ const ASTRONAUT_SVG = `
       <stop offset="45%" stop-color="#00c9b0"/>
       <stop offset="100%" stop-color="#063b34"/>
     </radialGradient>
+    <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fff7c2"/>
+      <stop offset="55%" stop-color="#ffcf3f"/>
+      <stop offset="100%" stop-color="#ff8c1a"/>
+    </radialGradient>
   </defs>
   <rect width="240" height="240" fill="url(#bg)"/>
-  <circle cx="70" cy="40" r="1.4" fill="#fff" opacity="0.8"/>
-  <circle cx="190" cy="60" r="1" fill="#fff" opacity="0.6"/>
-  <circle cx="205" cy="170" r="1.6" fill="#fff" opacity="0.7"/>
-  <circle cx="40" cy="190" r="1" fill="#fff" opacity="0.5"/>
-  <circle cx="160" cy="25" r="1.2" fill="#fff" opacity="0.6"/>
-  <!-- backpack -->
-  <rect x="92" y="120" width="56" height="70" rx="14" fill="#3a3a5e"/>
-  <!-- body -->
-  <ellipse cx="120" cy="165" rx="46" ry="55" fill="url(#suit)"/>
-  <ellipse cx="120" cy="165" rx="46" ry="55" fill="none" stroke="#6a6ab0" stroke-width="2" opacity="0.5"/>
-  <!-- chest panel -->
-  <rect x="100" y="145" width="40" height="26" rx="5" fill="#1b1b38"/>
-  <circle cx="110" cy="158" r="3" fill="#00F5D4"/>
-  <circle cx="120" cy="158" r="3" fill="#FFD700"/>
-  <circle cx="130" cy="158" r="3" fill="#FF4466"/>
-  <rect x="106" y="163" width="28" height="4" rx="2" fill="#444470"/>
-  <!-- arms -->
-  <ellipse cx="68" cy="160" rx="16" ry="34" fill="url(#suit)" transform="rotate(-18 68 160)"/>
-  <ellipse cx="172" cy="160" rx="16" ry="34" fill="url(#suit)" transform="rotate(18 172 160)"/>
-  <circle cx="58" cy="195" r="13" fill="#cfcfe8"/>
-  <circle cx="182" cy="195" r="13" fill="#cfcfe8"/>
-  <!-- helmet -->
-  <circle cx="120" cy="92" r="54" fill="url(#suit)"/>
-  <circle cx="120" cy="92" r="54" fill="none" stroke="#6a6ab0" stroke-width="2" opacity="0.5"/>
-  <circle cx="120" cy="94" r="40" fill="url(#visor)"/>
-  <ellipse cx="105" cy="78" rx="14" ry="8" fill="#ffffff" opacity="0.35"/>
-  <!-- reflection of a tiny planet in visor -->
-  <circle cx="138" cy="106" r="7" fill="#FFD700" opacity="0.8"/>
-  <circle cx="138" cy="106" r="10" fill="none" stroke="#FFD700" stroke-width="1" opacity="0.4"/>
-  <!-- antenna -->
-  <circle cx="160" cy="46" r="4" fill="#FF4466"/>
-  <line x1="160" y1="46" x2="150" y2="62" stroke="#9b9bd0" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="32" cy="34" r="1.3" fill="#fff" opacity="0.7"/>
+  <circle cx="208" cy="50" r="1" fill="#fff" opacity="0.6"/>
+  <circle cx="20" cy="150" r="1.4" fill="#fff" opacity="0.6"/>
+  <circle cx="216" cy="190" r="1" fill="#fff" opacity="0.5"/>
+
+  <!-- ANIMATED SOLAR SYSTEM (orbiting, behind/above the astronaut) -->
+  <g transform="translate(120,88)">
+    <circle r="8.5" fill="url(#sunGlow)"/>
+    <circle r="15" fill="none" stroke="#FFD700" opacity="0.18"/>
+
+    <g transform="scale(1,0.42)">
+      <ellipse r="26" fill="none" stroke="#9B7FE0" stroke-width="1" opacity="0.4"/>
+      <g><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="4s" repeatCount="indefinite"/>
+        <circle cx="26" cy="0" r="2.6" fill="#4d96ff"/>
+      </g>
+    </g>
+    <g transform="scale(1,0.42)">
+      <ellipse r="40" fill="none" stroke="#9B7FE0" stroke-width="1" opacity="0.32"/>
+      <g><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="7s" repeatCount="indefinite"/>
+        <circle cx="40" cy="0" r="2.1" fill="#d1542e"/>
+      </g>
+    </g>
+    <g transform="scale(1,0.42)">
+      <ellipse r="55" fill="none" stroke="#9B7FE0" stroke-width="1" opacity="0.24"/>
+      <g><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="11s" repeatCount="indefinite"/>
+        <circle cx="55" cy="0" r="3.4" fill="#ead6a8"/>
+        <ellipse cx="55" cy="0" rx="6" ry="1.6" fill="none" stroke="#C9B98A" stroke-width="0.8"/>
+      </g>
+    </g>
+  </g>
+
+  <!-- ASTRONAUT, floating lower-frame, facing up toward the solar system -->
+  <g transform="translate(120,178) scale(0.78)">
+    <rect x="-28" y="-8" width="56" height="68" rx="14" fill="#3a3a5e"/>
+    <ellipse cx="0" cy="42" rx="46" ry="52" fill="url(#suit)"/>
+    <ellipse cx="0" cy="42" rx="46" ry="52" fill="none" stroke="#6a6ab0" stroke-width="2" opacity="0.5"/>
+    <rect x="-20" y="22" width="40" height="26" rx="5" fill="#1b1b38"/>
+    <circle cx="-10" cy="35" r="3" fill="#00F5D4"/>
+    <circle cx="0" cy="35" r="3" fill="#FFD700"/>
+    <circle cx="10" cy="35" r="3" fill="#FF4466"/>
+    <rect x="-14" y="40" width="28" height="4" rx="2" fill="#444470"/>
+    <!-- arm raised toward the solar system -->
+    <ellipse cx="-46" cy="-6" rx="15" ry="32" fill="url(#suit)" transform="rotate(-48 -46 -6)"/>
+    <circle cx="-66" cy="-30" r="12" fill="#cfcfe8"/>
+    <ellipse cx="52" cy="38" rx="16" ry="34" fill="url(#suit)" transform="rotate(18 52 38)"/>
+    <circle cx="62" cy="72" r="13" fill="#cfcfe8"/>
+    <!-- helmet -->
+    <circle cx="0" cy="-32" r="50" fill="url(#suit)"/>
+    <circle cx="0" cy="-32" r="50" fill="none" stroke="#6a6ab0" stroke-width="2" opacity="0.5"/>
+    <circle cx="0" cy="-30" r="37" fill="url(#visor)"/>
+    <ellipse cx="-14" cy="-45" rx="13" ry="7" fill="#ffffff" opacity="0.35"/>
+    <!-- tiny reflected planet in the visor -->
+    <circle cx="14" cy="-18" r="5" fill="#FFD700" opacity="0.85"/>
+  </g>
 </svg>`;
 
 document.getElementById('heroPortraitImg').innerHTML = ASTRONAUT_SVG;
@@ -138,13 +167,16 @@ document.querySelectorAll('.nav-tab').forEach(tab => {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.getElementById('view-' + tab.dataset.view).classList.add('active');
     document.getElementById('scrollDots').style.display = tab.dataset.view === 'home' ? 'flex' : 'none';
+    const showCinematic = tab.dataset.view === 'dashboard' || tab.dataset.view === 'briefing';
+    document.getElementById('cinematicBg').classList.toggle('active', showCinematic);
+    if (showCinematic) loadApodImages();
     if (tab.dataset.view === 'home') {
       setTimeout(onSolarResize, 50);
       setTimeout(onConstResize, 50);
       setTimeout(onGalaxyResize, 50);
       setTimeout(onUniverseResize, 50);
     }
-    if (tab.dataset.view === 'briefing' && !briefingLoaded) { briefingLoaded = true; loadBriefing(); }
+    if (tab.dataset.view === 'briefing' && !briefingLoaded) { briefingLoaded = true; loadFeedColumns(); }
   });
 });
 
@@ -175,14 +207,27 @@ const dotObserver = new IntersectionObserver(entries => {
       const idx = sections.indexOf(entry.target);
       document.querySelectorAll('.scroll-dot').forEach((d,i) => d.classList.toggle('active', i===idx));
       hideTooltip();
-      if (idx === 1 && !solarInited) { solarInited = true; initSolarSystem(); }
-      if (idx === 2 && !galaxyInited) { galaxyInited = true; initGalaxy(); }
-      if (idx === 3 && !universeInited) { universeInited = true; initUniverse(); }
-      if (idx === 4 && !constInited) { constInited = true; initConstellations(); }
     }
   });
 }, { root: homeView, threshold: 0.5 });
 sections.forEach(s => dotObserver.observe(s));
+
+// Separate, much-earlier-firing observer purely for lazy-initializing each
+// section's canvas — without this, a section's WebGL/2D scene only existed
+// once 50% scrolled into view, so scrolling through it showed solid black
+// for a moment first (looked like a broken "split screen"). Pre-loading
+// ~1 viewport ahead means the canvas is already rendering by the time it's seen.
+const lazyInitObserver = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (!entry.isIntersecting) return;
+    const idx = sections.indexOf(entry.target);
+    if (idx === 1 && !solarInited) { solarInited = true; initSolarSystem(); }
+    if (idx === 2 && !galaxyInited) { galaxyInited = true; initGalaxy(); }
+    if (idx === 3 && !universeInited) { universeInited = true; initUniverse(); }
+    if (idx === 4 && !constInited) { constInited = true; initConstellations(); }
+  });
+}, { root: homeView, rootMargin: '100% 0px 100% 0px', threshold: 0 });
+sections.forEach(s => lazyInitObserver.observe(s));
 
 // ══════════════════════════════════════════════════════════════════════════
 // DASHBOARD LOGIC
@@ -333,6 +378,59 @@ function renderCalendar() {
   }).join('');
 }
 
+// ── LIVE SPACE DATA: launches (Launch Library 2) + space weather (NASA DONKI) ──
+let liveSpaceDataLoaded = false;
+async function loadLiveSpaceData() {
+  if (liveSpaceDataLoaded) return;
+  liveSpaceDataLoaded = true;
+  loadLaunches();
+  loadSpaceWeather();
+}
+
+async function loadLaunches() {
+  const el = document.getElementById('launchList');
+  try {
+    const res = await fetch('launches.json?t=' + Date.now());
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const launches = data.launches || [];
+    if (!launches.length) { el.innerHTML = '<div class="live-data-empty">No launch data — run scripts/pull-launches.js</div>'; return; }
+    el.innerHTML = launches.map(l => {
+      const dt = new Date(l.net);
+      const isGo = /go|confirmed/i.test(l.status);
+      return `
+      <div class="launch-item">
+        <div class="launch-item-top">
+          <div class="launch-name">${l.name}</div>
+          <div class="launch-status ${isGo ? '' : 'tbd'}">${l.statusAbbrev || l.status}</div>
+        </div>
+        <div class="launch-meta">${l.provider} · ${l.rocket} · ${dt.toLocaleDateString(undefined,{month:'short',day:'numeric'})} ${dt.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'})}</div>
+      </div>`;
+    }).join('');
+  } catch (e) {
+    el.innerHTML = `<div class="live-data-empty">⚠ Failed to load: ${e.message}</div>`;
+  }
+}
+
+async function loadSpaceWeather() {
+  const el = document.getElementById('weatherList');
+  try {
+    const res = await fetch('spaceweather.json?t=' + Date.now());
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const events = data.events || [];
+    if (!events.length) { el.innerHTML = '<div class="live-data-empty">No solar activity in the last 7 days — quiet skies.</div>'; return; }
+    el.innerHTML = events.map(e => `
+      <div class="weather-item">
+        <div class="weather-item-top"><span class="weather-icon">${e.icon}</span><span class="weather-type">${e.type}</span></div>
+        <div class="weather-detail">${e.detail}</div>
+        <div class="weather-time">${new Date(e.time).toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
+      </div>`).join('');
+  } catch (e) {
+    el.innerHTML = `<div class="live-data-empty">⚠ Failed to load: ${e.message}</div>`;
+  }
+}
+
 function updateTelemetry(data) {
   const p     = data.profiles['vpspaceman'] || {};
   const posts = data.posts['vpspaceman'] || [];
@@ -357,6 +455,34 @@ function setLiveStatus(text) {
   if (el) el.textContent = text;
 }
 
+function renderFeedColumn(elId, items) {
+  const el = document.getElementById(elId);
+  if (!items || !items.length) { el.innerHTML = '<div class="feed-col-empty">No headlines yet</div>'; return; }
+  el.innerHTML = items.map(item => `
+    <a class="feed-item" href="${item.link}" target="_blank" rel="noopener">
+      <div class="feed-item-title">${item.title}</div>
+      <div class="feed-item-meta">${timeAgo(item.pubDate)} · ${new URL(item.link).hostname.replace('www.','')}</div>
+    </a>`).join('');
+}
+
+async function loadFeedColumns() {
+  try {
+    const res = await fetch('news.json?t=' + Date.now());
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const cols = data.columns || {};
+    renderFeedColumn('feedSpace', cols.space);
+    renderFeedColumn('feedAi', cols.ai);
+    renderFeedColumn('feedBikes', cols.bikes);
+    renderFeedColumn('feedWorld', cols.world);
+    renderFeedColumn('feedStocks', cols.stocks);
+  } catch (e) {
+    ['feedSpace','feedAi','feedBikes','feedWorld','feedStocks'].forEach(id => {
+      document.getElementById(id).innerHTML = `<div class="feed-col-empty">⚠ Failed to load</div>`;
+    });
+  }
+}
+
 async function refreshDashboard() {
   try {
     const res  = await fetch('data.json?t=' + Date.now()); // cache-bust so polling actually re-reads the file
@@ -368,6 +494,7 @@ async function refreshDashboard() {
     if (!dashboardLoadedOnce) {
       renderAgents(data);   // only render agent cards once — re-rendering would wipe live "UPLINK AGENT" results
       renderCalendar();
+      loadLiveSpaceData();
       dashboardLoadedOnce = true;
     }
     lastRefreshAt = Date.now();
@@ -393,22 +520,26 @@ setInterval(tickLiveStatus, 1000);
 // ══════════════════════════════════════════════════════════════════════════
 // spinDays = real rotation period in Earth days (negative = retrograde, i.e. Venus/Uranus
 // visibly spin backwards relative to their orbit, same as in reality).
+// CORS-friendly texture host (jsDelivr serves GitHub raw content with
+// Access-Control-Allow-Origin: * — the original solarsystemscope.com URLs were
+// blocking cross-origin hotlinking, which silently failed every texture load).
+const TEX = 'https://cdn.jsdelivr.net/gh/N3rson/Solar-System-3D@main/src/images/';
 const PLANETS = [
-  { key:'mercury', name:'Mercury', type:'Terrestrial Planet', color:0x9c9c9c, radius:0.38, orbit:14, period:0.24, spinDays:58.6,
+  { key:'mercury', name:'Mercury', type:'Terrestrial Planet', color:0x9c9c9c, texture: TEX+'mercurymap.jpg', radius:0.38, orbit:14, period:0.24, spinDays:58.6,
     desc:'The smallest, fastest planet — a scorched, cratered world baked by the closest orbit to the Sun.' },
-  { key:'venus', name:'Venus', type:'Terrestrial Planet', color:0xe8c27a, radius:0.6, orbit:19, period:0.62, spinDays:-243,
+  { key:'venus', name:'Venus', type:'Terrestrial Planet', color:0xe8c27a, texture: TEX+'venusmap.jpg', radius:0.6, orbit:19, period:0.62, spinDays:-243,
     desc:'Earth\'s twin in size, but a runaway greenhouse hell under crushing CO₂ skies — and it spins backwards.' },
-  { key:'earth', name:'Earth', type:'Terrestrial Planet', color:0x4d96ff, radius:0.64, orbit:25, period:1, spinDays:1,
+  { key:'earth', name:'Earth', type:'Terrestrial Planet', color:0x4d96ff, texture: TEX+'earth_daymap.jpg', radius:0.64, orbit:25, period:1, spinDays:1,
     desc:'Home. The only known world with liquid oceans, breathable air, and life.' },
-  { key:'mars', name:'Mars', type:'Terrestrial Planet', color:0xd1542e, radius:0.5, orbit:32, period:1.88, spinDays:1.03,
+  { key:'mars', name:'Mars', type:'Terrestrial Planet', color:0xd1542e, texture: TEX+'marsmap.jpg', radius:0.5, orbit:32, period:1.88, spinDays:1.03,
     desc:'The Red Planet — iron oxide dust, polar ice, and the tallest volcano in the solar system.' },
-  { key:'jupiter', name:'Jupiter', type:'Gas Giant', color:0xd9a06b, radius:2.2, orbit:48, period:11.86, spinDays:0.41,
+  { key:'jupiter', name:'Jupiter', type:'Gas Giant', color:0xd9a06b, texture: TEX+'jupiter.jpg', radius:2.2, orbit:48, period:11.86, spinDays:0.41,
     desc:'The largest planet — a churning hydrogen giant with a storm bigger than Earth. Spins so fast its day is under 10 hours.' },
-  { key:'saturn', name:'Saturn', type:'Gas Giant', color:0xead6a8, radius:1.9, orbit:66, period:29.46, spinDays:0.45, hasRing:true,
+  { key:'saturn', name:'Saturn', type:'Gas Giant', color:0xead6a8, texture: TEX+'saturnmap.jpg', radius:1.9, orbit:66, period:29.46, spinDays:0.45, hasRing:true,
     desc:'Famed for its dazzling ice-and-rock ring system — low density enough to float in water.' },
-  { key:'uranus', name:'Uranus', type:'Ice Giant', color:0x9fe3e3, radius:1.3, orbit:82, period:84.01, spinDays:-0.72,
+  { key:'uranus', name:'Uranus', type:'Ice Giant', color:0x9fe3e3, texture: TEX+'uranus.jpg', radius:1.3, orbit:82, period:84.01, spinDays:-0.72,
     desc:'Tipped almost completely on its side, rolling around the Sun like a ball — and also spins backwards.' },
-  { key:'neptune', name:'Neptune', type:'Ice Giant', color:0x4169e1, radius:1.25, orbit:96, period:164.8, spinDays:0.67,
+  { key:'neptune', name:'Neptune', type:'Ice Giant', color:0x4169e1, texture: TEX+'neptune.jpg', radius:1.25, orbit:96, period:164.8, spinDays:0.67,
     desc:'The windiest world known — supersonic methane storms at the dark edge of the system.' },
 ];
 
@@ -416,7 +547,7 @@ const PLANETS = [
 // orbit radius/period scaled for a clear visual on top of the planet's own spin.
 const MOONS = {
   earth: [
-    { key:'moon', name:'The Moon', type:'Natural Satellite', color:0xcfcfcf, radius:0.17, orbit:1.7, periodDays:27.3,
+    { key:'moon', name:'The Moon', type:'Natural Satellite', color:0xcfcfcf, texture:'https://cdn.jsdelivr.net/gh/N3rson/Solar-System-3D@main/src/images/moonmap.jpg', radius:0.17, orbit:1.7, periodDays:27.3,
       desc:'Earth\'s only natural satellite — formed ~4.5 billion years ago, likely from a giant impact.' },
     { key:'iss', name:'ISS', type:'Artificial Satellite (symbolic)', color:0xffffff, radius:0.06, orbit:0.95, periodDays:0.065,
       desc:'The International Space Station orbits Earth roughly every 92 minutes — shown here symbolically, not to scale.' },
@@ -529,7 +660,24 @@ function nextEarthOrbitCrossing(comet, now) {
 
 let solarScene, solarCamera, solarRenderer, solarControls;
 let planetMeshes = [], cometMeshes = [], moonMeshes = [], orbitGroup, simRunning = true, timeWarp = 40, solarInited = false;
-let selectedBody = null, cameraFly = null;
+let selectedBody = null, cameraFly = null, starMaterial = null;
+
+// Real current planet positions from NASA JPL Horizons (scripts/pull-planet-positions.js).
+// Used to start each planet at its actual real-world ecliptic angle "right now"
+// instead of a random one, before the time-warped animation takes over.
+let realPlanetPositions = null;
+fetch('planet-positions.json?t=' + Date.now())
+  .then(r => r.ok ? r.json() : null)
+  .then(d => { realPlanetPositions = (d && d.positions) || {}; applyRealPlanetPositions(); })
+  .catch(() => { realPlanetPositions = {}; });
+
+function applyRealPlanetPositions() {
+  if (!realPlanetPositions || !planetMeshes.length) return;
+  planetMeshes.forEach(({ pivot, data }) => {
+    const real = realPlanetPositions[data.key];
+    if (pivot && real) pivot.rotation.y = -real.angleDeg * Math.PI / 180;
+  });
+}
 
 function easeInOutCubic(t) { return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2, 3)/2; }
 
@@ -612,6 +760,17 @@ function deselectBody() {
   document.querySelectorAll('.body-pill').forEach(el => el.classList.remove('active'));
 }
 
+// WebGL caps THREE.Line width at 1px on most GPUs/browsers regardless of the
+// `linewidth` material setting — that's why orbit rings looked invisible even
+// at high opacity. A thin TubeGeometry along the same path renders with real,
+// camera-distance-correct thickness instead, so it's actually visible.
+function makeOrbitTube(points, color, opacity, tubeRadius = 0.07) {
+  const curve = new THREE.CatmullRomCurve3(points, true);
+  const geo = new THREE.TubeGeometry(curve, points.length, tubeRadius, 6, true);
+  const mat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity });
+  return new THREE.Mesh(geo, mat);
+}
+
 function initSolarSystem() {
   const wrap = document.getElementById('solarCanvasWrap');
   const w = wrap.clientWidth, h = wrap.clientHeight;
@@ -635,18 +794,51 @@ function initSolarSystem() {
   solarScene.add(new THREE.PointLight(0xffffff, 3, 0, 0.15));
 
   const starGeo = new THREE.BufferGeometry();
-  const starCount = 2000, positions = new Float32Array(starCount*3);
+  const starCount = 2000, positions = new Float32Array(starCount*3), phases = new Float32Array(starCount), speeds = new Float32Array(starCount), sizes = new Float32Array(starCount);
   for (let i=0;i<starCount;i++) {
     const r = 600 + Math.random()*400;
     const theta = Math.random()*Math.PI*2, phi = Math.acos(2*Math.random()-1);
     positions[i*3] = r*Math.sin(phi)*Math.cos(theta);
     positions[i*3+1] = r*Math.sin(phi)*Math.sin(theta);
     positions[i*3+2] = r*Math.cos(phi);
+    phases[i] = Math.random()*Math.PI*2;
+    speeds[i] = 0.5 + Math.random()*2.2;
+    sizes[i] = 1.6 + Math.random()*2.6;
   }
   starGeo.setAttribute('position', new THREE.BufferAttribute(positions,3));
-  solarScene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color:0xE8E8FF, size:1.1, sizeAttenuation:false })));
+  starGeo.setAttribute('aPhase', new THREE.BufferAttribute(phases,1));
+  starGeo.setAttribute('aSpeed', new THREE.BufferAttribute(speeds,1));
+  starGeo.setAttribute('aSize', new THREE.BufferAttribute(sizes,1));
 
-  const sunMesh = new THREE.Mesh(new THREE.SphereGeometry(4.2, 48, 48), new THREE.MeshBasicMaterial({ color: 0xFFD700 }));
+  // Real per-star twinkle (not a single global pulse) via a tiny custom shader —
+  // each star's brightness oscillates independently using its own phase/speed.
+  starMaterial = new THREE.ShaderMaterial({
+    uniforms: { uTime: { value: 0 } },
+    vertexShader: `
+      attribute float aPhase; attribute float aSpeed; attribute float aSize;
+      uniform float uTime;
+      varying float vTwinkle;
+      void main() {
+        vTwinkle = 0.25 + 0.85 * (0.5 + 0.5 * sin(uTime * aSpeed + aPhase));
+        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+        gl_PointSize = aSize * 2.6;
+        gl_Position = projectionMatrix * mvPosition;
+      }`,
+    fragmentShader: `
+      varying float vTwinkle;
+      void main() {
+        vec2 c = gl_PointCoord - vec2(0.5);
+        float d = length(c);
+        if (d > 0.5) discard;
+        float core = smoothstep(0.5, 0.0, d);
+        gl_FragColor = vec4(1.0, 1.0, 1.0, min(1.0, vTwinkle * core * 1.4));
+      }`,
+    transparent: true, depthWrite: false,
+  });
+  solarScene.add(new THREE.Points(starGeo, starMaterial));
+
+  const sunTexture = makeSunTexture();
+  const sunMesh = new THREE.Mesh(new THREE.SphereGeometry(4.2, 48, 48), new THREE.MeshBasicMaterial({ map: sunTexture }));
   sunMesh.userData = { key:'sun', name:'Sun', type:'G-Type Star', desc:'Fuses hydrogen into helium, radiating the energy that powers the whole system.' };
   solarScene.add(sunMesh);
   const sunGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: makeGlowTexture(), color: 0xFFD700, transparent: true, opacity: 0.55, depthWrite:false }));
@@ -658,30 +850,40 @@ function initSolarSystem() {
   planetMeshes = [{ mesh: sunMesh, pivot: null, data: sunMesh.userData }];
   moonMeshes = [];
 
+  const textureLoader = new THREE.TextureLoader();
+
   PLANETS.forEach(p => {
     const orbitCurve = new THREE.EllipseCurve(0,0, p.orbit, p.orbit, 0, 2*Math.PI, false, 0);
     const pts = orbitCurve.getPoints(128).map(pt => new THREE.Vector3(pt.x,0,pt.y));
-    const orbitLine = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts),
-      new THREE.LineBasicMaterial({ color: 0xa899ff, transparent:true, opacity:0.55 }));
+    const orbitLine = makeOrbitTube(pts, 0xa899ff, 0.65, 0.09);
     orbitGroup.add(orbitLine);
 
     const pivot = new THREE.Object3D();
     pivot.rotation.y = Math.random()*Math.PI*2;
     orbitGroup.add(pivot);
 
-    const mesh = new THREE.Mesh(new THREE.SphereGeometry(p.radius, 32, 32),
-      new THREE.MeshStandardMaterial({ color: p.color, roughness:0.7, metalness:0.05, emissive: p.color, emissiveIntensity:0.08 }));
+    // Real photographic textures (CC-licensed, NASA-derived imagery) instead of
+    // flat color spheres. Falls back to the flat color if the texture fails to load.
+    const planetMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness:0.85, metalness:0.02, emissive: p.color, emissiveIntensity:0.04 });
+    if (p.texture) {
+      textureLoader.load(p.texture, tex => { planetMat.map = tex; planetMat.color.set(0xffffff); planetMat.needsUpdate = true; },
+        undefined, () => { planetMat.color.set(p.color); }); // texture failed to load — keep flat color
+    } else {
+      planetMat.color.set(p.color);
+    }
+    const mesh = new THREE.Mesh(new THREE.SphereGeometry(p.radius, 32, 32), planetMat);
     mesh.position.x = p.orbit;
     mesh.userData = p;
     pivot.add(mesh);
 
     if (p.hasRing) {
+      const ringTex = textureLoader.load(TEX + 'saturn_ring.png');
       const ring = new THREE.Mesh(new THREE.RingGeometry(p.radius*1.4, p.radius*2.4, 64),
-        new THREE.MeshBasicMaterial({ color:0xC9B98A, side:THREE.DoubleSide, transparent:true, opacity:0.55 }));
+        new THREE.MeshBasicMaterial({ map: ringTex, color:0xffffff, side:THREE.DoubleSide, transparent:true, opacity:0.85 }));
       ring.rotation.x = Math.PI/2 - 0.4;
       mesh.add(ring);
     }
-    planetMeshes.push({ pivot, mesh, data:p, orbitLine, baseOpacity:0.55, baseColor:0xa899ff });
+    planetMeshes.push({ pivot, mesh, data:p, orbitLine, baseOpacity:0.65, baseColor:0xa899ff });
 
     // MOONS / SATELLITES — orbit the planet's position in the sun-orbit pivot,
     // independent of the planet's own spin so they don't get dragged by it.
@@ -693,16 +895,16 @@ function initSolarSystem() {
       moonList.forEach(m => {
         const moonOrbitPts = new THREE.EllipseCurve(0,0, m.orbit, m.orbit, 0, 2*Math.PI, false, 0)
           .getPoints(48).map(pt => new THREE.Vector3(pt.x,0,pt.y));
-        const moonOrbitLine = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(moonOrbitPts),
-          new THREE.LineBasicMaterial({ color: 0x8888bb, transparent:true, opacity:0.35 }));
+        const moonOrbitLine = makeOrbitTube(moonOrbitPts, 0x8888bb, 0.5, 0.025);
         moonGroup.add(moonOrbitLine);
 
         const moonPivot = new THREE.Object3D();
         moonPivot.rotation.y = Math.random()*Math.PI*2;
         moonGroup.add(moonPivot);
 
-        const moonMesh = new THREE.Mesh(new THREE.SphereGeometry(m.radius, 16, 16),
-          new THREE.MeshStandardMaterial({ color: m.color, roughness:0.8, emissive:m.color, emissiveIntensity:0.06 }));
+        const moonMat = new THREE.MeshStandardMaterial({ color: m.color, roughness:0.8, emissive:m.color, emissiveIntensity:0.06 });
+        if (m.texture) textureLoader.load(m.texture, tex => { moonMat.map = tex; moonMat.color.set(0xffffff); moonMat.needsUpdate = true; });
+        const moonMesh = new THREE.Mesh(new THREE.SphereGeometry(m.radius, 16, 16), moonMat);
         const moonUserData = { key: `${p.key}-${m.key}`, name: m.name, type: `${m.type} of ${p.name}`, desc: m.desc, orbit: m.orbit, periodDays: m.periodDays, radius: m.radius, isMoon: true, parentPlanet: p.name };
         moonMesh.userData = moonUserData;
 
@@ -716,7 +918,7 @@ function initSolarSystem() {
         moonHitMesh.add(moonMesh);
         moonPivot.add(moonHitMesh);
 
-        moonMeshes.push({ pivot: moonPivot, mesh: moonHitMesh, data: moonUserData, orbitLine: moonOrbitLine, baseOpacity:0.35, baseColor:0x8888bb, periodDays: m.periodDays });
+        moonMeshes.push({ pivot: moonPivot, mesh: moonHitMesh, data: moonUserData, orbitLine: moonOrbitLine, baseOpacity:0.5, baseColor:0x8888bb, periodDays: m.periodDays });
       });
     }
   });
@@ -733,20 +935,21 @@ function initSolarSystem() {
       const z = pt.x*Math.sin(omegaRad) + pt.y*Math.cos(omegaRad);
       return new THREE.Vector3(x, 0, z);
     });
-    const orbitLine = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts),
-      new THREE.LineBasicMaterial({ color: c.color, transparent:true, opacity:0.45 }));
+    const orbitLine = makeOrbitTube(pts, c.color, 0.6, 0.1);
     orbitGroup.add(orbitLine);
 
     const mesh = new THREE.Mesh(new THREE.SphereGeometry(0.55, 16, 16),
-      new THREE.MeshBasicMaterial({ color: c.color }));
+      new THREE.MeshStandardMaterial({ map: makeCometTexture(c.color), color: 0xffffff, roughness:0.95, emissive: c.color, emissiveIntensity:0.18 }));
     const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: makeGlowTexture(), color: c.color, transparent: true, opacity: 0.6, depthWrite:false }));
     glow.scale.set(6,6,1);
     mesh.add(glow);
     mesh.userData = { key: c.key, name: c.name, type: `Comet (${c.designation})`, isComet: true, comet: c };
     solarScene.add(mesh);
-    cometMeshes.push({ mesh, data: c, orbitLine, baseOpacity:0.45, baseColor:c.color });
+    cometMeshes.push({ mesh, data: c, orbitLine, baseOpacity:0.6, baseColor:c.color });
   });
 
+  applyRealPlanetPositions(); // no-op if the fetch hasn't resolved yet — it'll self-apply when it does
+  loadNeos();
   buildBodyPills();
 
   const raycaster = new THREE.Raycaster();
@@ -814,6 +1017,68 @@ function initSolarSystem() {
   window.addEventListener('resize', onSolarResize);
 }
 
+// Procedural "burning surface" texture for the Sun — layered turbulent blotches
+// of red/orange/yellow/white, redrawn periodically to fake convective flicker.
+function drawSunTextureFrame(ctx, size) {
+  ctx.clearRect(0, 0, size, size);
+  const base = ctx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
+  base.addColorStop(0, '#fff7c2');
+  base.addColorStop(0.4, '#ffcf3f');
+  base.addColorStop(0.75, '#ff8c1a');
+  base.addColorStop(1, '#d3450a');
+  ctx.fillStyle = base;
+  ctx.fillRect(0, 0, size, size);
+
+  const blotchColors = ['rgba(255,255,210,0.5)', 'rgba(255,140,0,0.45)', 'rgba(200,40,0,0.35)', 'rgba(255,210,90,0.4)'];
+  for (let i = 0; i < 55; i++) {
+    const x = Math.random()*size, y = Math.random()*size;
+    const r = 6 + Math.random()*26;
+    const grad = ctx.createRadialGradient(x,y,0,x,y,r);
+    const color = blotchColors[i % blotchColors.length];
+    grad.addColorStop(0, color);
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.fill();
+  }
+}
+
+function makeSunTexture() {
+  const size = 256;
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  drawSunTextureFrame(ctx, size);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+
+  // Re-roll the turbulence every ~250ms for a boiling/flickering surface.
+  setInterval(() => { drawSunTextureFrame(ctx, size); texture.needsUpdate = true; }, 250);
+  return texture;
+}
+
+// Procedural rocky/icy texture for comet nuclei — mottled craggy surface instead
+// of a flat solid color, tinted toward each comet's accent color.
+function makeCometTexture(hexColor) {
+  const size = 128;
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  const c = new THREE.Color(hexColor);
+  const rgb = `${Math.round(c.r*255)},${Math.round(c.g*255)},${Math.round(c.b*255)}`;
+  ctx.fillStyle = `rgb(40,40,48)`;
+  ctx.fillRect(0, 0, size, size);
+  for (let i = 0; i < 90; i++) {
+    const x = Math.random()*size, y = Math.random()*size, r = 2 + Math.random()*9;
+    const grad = ctx.createRadialGradient(x,y,0,x,y,r);
+    const lightness = Math.random() > 0.5 ? `rgba(${rgb},${0.25+Math.random()*0.3})` : `rgba(20,20,26,${0.3+Math.random()*0.3})`;
+    grad.addColorStop(0, lightness);
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.fill();
+  }
+  return new THREE.CanvasTexture(canvas);
+}
+
 function makeGlowTexture() {
   const c = document.createElement('canvas'); c.width=c.height=128;
   const g = c.getContext('2d');
@@ -836,29 +1101,85 @@ function buildBodyPills() {
   });
 }
 
+// ── NEAR-EARTH OBJECTS (real data, NASA NeoWs via scripts/pull-neows.js) ───
+let neosLoaded = false;
+async function loadNeos() {
+  if (neosLoaded) return;
+  neosLoaded = true;
+  const listEl = document.getElementById('neoList');
+  const countEl = document.getElementById('neoCount');
+  try {
+    const res = await fetch('neows.json?t=' + Date.now());
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const objects = data.objects || [];
+    countEl.textContent = `(${objects.length})`;
+    if (!objects.length) { listEl.innerHTML = '<div class="neo-empty">No data — run scripts/pull-neows.js</div>'; return; }
+    listEl.innerHTML = objects.map((o, i) => `
+      <div class="neo-item ${o.hazardous ? 'hazardous' : ''}" data-idx="${i}">
+        <div class="neo-item-name">${o.hazardous ? '⚠ ' : '☄ '}${o.name}</div>
+        <div class="neo-item-meta">${o.closeApproachDate} · ${o.missDistanceLunar} LD${o.hazardous ? ' · <span class="haz-tag">HAZARDOUS</span>' : ''}</div>
+      </div>`).join('');
+    document.querySelectorAll('.neo-item').forEach(el => {
+      el.addEventListener('click', () => showNeoDetail(objects[+el.dataset.idx]));
+    });
+  } catch (e) {
+    listEl.innerHTML = `<div class="neo-empty">⚠ Failed to load: ${e.message}</div>`;
+  }
+}
+
+function showNeoDetail(o) {
+  selectedBody = null; // not a renderable 3D body — just informational
+  highlightOrbit(null);
+  const panel = document.getElementById('bodyDetailPanel');
+  panel.classList.add('open');
+  document.getElementById('bd-name').textContent = o.name;
+  document.getElementById('bd-type').textContent = o.hazardous ? 'Near-Earth Asteroid — Potentially Hazardous' : 'Near-Earth Asteroid';
+  document.getElementById('bd-desc').textContent = `Real close-approach data from NASA's NeoWs catalog. Closest approach: ${o.closeApproachDate} UTC.`;
+  document.getElementById('bd-stats').innerHTML = `
+    <div class="body-detail-stat"><span>Close Approach</span><span>${o.closeApproachDate}</span></div>
+    <div class="body-detail-stat"><span>Miss Distance</span><span>${o.missDistanceLunar} lunar distances</span></div>
+    <div class="body-detail-stat"><span>Miss Distance (km)</span><span>${o.missDistanceKm.toLocaleString()} km</span></div>
+    <div class="body-detail-stat"><span>Relative Velocity</span><span>${o.velocityKmS} km/s</span></div>
+    <div class="body-detail-stat"><span>Estimated Diameter</span><span>${o.diameterMinM}–${o.diameterMaxM} m</span></div>
+    <div class="body-detail-stat"><span>Hazardous</span><span>${o.hazardous ? 'Yes' : 'No'}</span></div>`;
+}
+
 const TWO_PI = Math.PI * 2;
 function wrapAngle(obj) { obj.rotation.y = obj.rotation.y % TWO_PI; } // keeps trig precision stable over long sessions
 
+// Comets start at their REAL current position (true "right now"), then advance on
+// a time-warped virtual clock like everything else — true real-time motion is far
+// too slow to ever see move on screen (Encke alone takes 3.3 years per orbit).
+let cometVirtualMs = Date.now();
+let lastCometFrameMs = null;
+
 function animateSolar() {
   requestAnimationFrame(animateSolar);
+  if (starMaterial) starMaterial.uniforms.uTime.value = performance.now() / 1000;
   if (simRunning) {
     planetMeshes.forEach(({pivot, data}) => { if (pivot) { pivot.rotation.y += (0.02/(data.period||1)) * (timeWarp/40); wrapAngle(pivot); } });
     // Self-rotation (spin) now uses each planet's REAL relative day length, so Mercury/Venus
     // visibly crawl, Earth/Mars spin at a comparable clip, the gas giants whip around fast,
     // and Venus/Uranus spin backwards (retrograde) — instead of one flat rate for everyone.
     planetMeshes.forEach(({mesh, data}) => {
-      if (!data.spinDays) return; // sun has no spinDays — leave it static
+      if (!data.spinDays) { if (data.key === 'sun') { mesh.rotation.y += 0.0025; wrapAngle(mesh); } return; } // sun rolls slowly for the burning-surface effect
       const spinSpeed = (0.045 / Math.abs(data.spinDays)) * Math.sign(data.spinDays) * (timeWarp/40);
       mesh.rotation.y += spinSpeed;
       wrapAngle(mesh);
     });
     moonMeshes.forEach(({ pivot, periodDays }) => { pivot.rotation.y += (0.6/periodDays) * (timeWarp/40); wrapAngle(pivot); });
   }
-  // Comets always reflect their REAL current position (true real-time, not time-warped)
-  const now = new Date();
+
+  const realNowMs = performance.timeOrigin + performance.now();
+  if (lastCometFrameMs === null) lastCometFrameMs = realNowMs;
+  if (simRunning) cometVirtualMs += (realNowMs - lastCometFrameMs) * timeWarp;
+  lastCometFrameMs = realNowMs;
+  const cometNow = new Date(cometVirtualMs);
   cometMeshes.forEach(({ mesh, data }) => {
-    const pos = cometPositionNow(data, now);
+    const pos = cometPositionNow(data, cometNow);
     mesh.position.set(pos.x, 0, pos.z);
+    if (simRunning) { mesh.rotation.y += 0.012; mesh.rotation.x += 0.006; }
   });
 
   if (cameraFly) {
@@ -1353,26 +1674,104 @@ function timeAgo(iso) {
   return `${Math.round(hrs/24)}d ago`;
 }
 
-async function loadBriefing() {
-  const list = document.getElementById('briefingList');
-  try {
-    const res = await fetch('news.json?t=' + Date.now());
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    if (!data.items || !data.items.length) {
-      list.innerHTML = '<div class="briefing-empty">No headlines yet — run scripts/pull-news.js to populate this.</div>';
-      return;
-    }
-    list.innerHTML = data.items.map((item, i) => `
-      <a class="briefing-item" href="${item.link}" target="_blank" rel="noopener">
-        <div class="briefing-rank">${String(i+1).padStart(2,'0')}</div>
-        <div class="briefing-body">
-          <span class="briefing-cat ${item.category.toLowerCase()}">${item.category}</span>
-          <div class="briefing-title">${item.title}</div>
-          <div class="briefing-meta">${timeAgo(item.pubDate)} · ${new URL(item.link).hostname.replace('www.','')}</div>
-        </div>
-      </a>`).join('');
-  } catch (e) {
-    list.innerHTML = `<div class="briefing-empty">⚠ Failed to load briefing: ${e.message}</div>`;
+// ══════════════════════════════════════════════════════════════════════════
+// BACKGROUND MUSIC (official YouTube IFrame Player API). Browsers block
+// autoplay WITH SOUND before any user interaction — no website can override
+// that, it's enforced by the browser itself. The closest legitimate approach:
+// autoplay MUTED the instant the page loads (browsers do allow this), so the
+// track is already playing silently — one click on the button just unmutes
+// it instantly, instead of starting playback from scratch after a click.
+let ytPlayer = null, ytReady = false, ytMuted = true, ytLoadFailed = false;
+const YT_VIDEO_ID = 'yJg-Y5byMMw'; // "Mortals" — Warriyo ft. Laura Brehm [NCS Release] (verified via ncs.io/mortals, the official catalog page)
+
+function onYouTubeIframeAPIReady() {
+  ytPlayer = new YT.Player('ytPlayerHost', {
+    height: '180', width: '320',
+    videoId: YT_VIDEO_ID,
+    playerVars: { autoplay: 1, mute: 1, controls: 0, loop: 1, playlist: YT_VIDEO_ID, playsinline: 1 },
+    events: {
+      onReady: (e) => {
+        ytReady = true;
+        e.target.playVideo();
+        document.getElementById('musicToggle').textContent = '🔇 Unmute Music';
+      },
+      onStateChange: (e) => {
+        if (e.data === YT.PlayerState.ENDED) ytPlayer.playVideo(); // manual loop
+      },
+      onError: () => {
+        ytLoadFailed = true;
+        document.getElementById('musicToggle').textContent = '⚠ Music unavailable';
+      },
+    },
+  });
+}
+window.onYouTubeIframeAPIReady = onYouTubeIframeAPIReady;
+
+// If the IFrame API script itself fails to load/init (network block, ad-blocker,
+// etc.) within a few seconds, stop showing a perpetual "Loading…" with no way out.
+setTimeout(() => {
+  if (!ytReady && !ytLoadFailed) {
+    document.getElementById('musicToggle').textContent = '⚠ Music unavailable';
   }
+}, 8000);
+
+document.getElementById('musicToggle').addEventListener('click', () => {
+  const btn = document.getElementById('musicToggle');
+  if (ytLoadFailed) return;
+  if (!ytReady) { btn.textContent = '⏳ Loading…'; return; }
+  if (ytMuted) {
+    ytPlayer.unMute();
+    ytMuted = false;
+    btn.textContent = '🔊 Playing';
+    btn.classList.add('playing');
+  } else {
+    ytPlayer.mute();
+    ytMuted = true;
+    btn.textContent = '🔇 Unmute Music';
+    btn.classList.remove('playing');
+  }
+});
+
+// ══════════════════════════════════════════════════════════════════════════
+// ROTATING CINEMATIC BACKGROUND (real NASA APOD photos, Dashboard/Briefing)
+// ══════════════════════════════════════════════════════════════════════════
+const NASA_APOD_KEY = 'DEMO_KEY'; // public NASA demo key — fine for this low-volume use
+let apodImages = [];
+let apodIndex = 0;
+let apodLoaded = false;
+let apodRotateTimer = null;
+let apodShowingA = true;
+
+async function loadApodImages() {
+  if (apodLoaded) return;
+  apodLoaded = true;
+  try {
+    const res = await fetch(`https://api.nasa.gov/planetary/apod?api_key=${NASA_APOD_KEY}&count=8`);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const items = await res.json();
+    apodImages = items
+      .filter(it => it.media_type === 'image' && it.url)
+      .map(it => it.hdurl || it.url);
+    if (apodImages.length) {
+      document.getElementById('bgPhotoA').style.backgroundImage = `url('${apodImages[0]}')`;
+      apodIndex = 1;
+      startApodRotation();
+    }
+  } catch (e) {
+    console.error('NASA APOD background failed to load:', e.message);
+  }
+}
+
+function startApodRotation() {
+  if (apodRotateTimer || apodImages.length < 2) return;
+  apodRotateTimer = setInterval(() => {
+    const nextUrl = apodImages[apodIndex % apodImages.length];
+    apodIndex++;
+    const incoming = document.getElementById(apodShowingA ? 'bgPhotoB' : 'bgPhotoA');
+    const outgoing = document.getElementById(apodShowingA ? 'bgPhotoA' : 'bgPhotoB');
+    incoming.style.backgroundImage = `url('${nextUrl}')`;
+    incoming.classList.add('show');
+    outgoing.classList.remove('show');
+    apodShowingA = !apodShowingA;
+  }, 15000);
 }

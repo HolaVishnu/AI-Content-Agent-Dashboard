@@ -1,0 +1,93 @@
+{
+  "pulledAt": "2026-06-30T15:26:09.689Z",
+  "source": "NASA DONKI (api.nasa.gov/DONKI)",
+  "rangeStart": "2026-06-23",
+  "rangeEnd": "2026-06-30",
+  "count": 56,
+  "events": [
+    {
+      "type": "Solar Flare",
+      "icon": "☀",
+      "time": "2026-06-30T12:57Z",
+      "detail": "Class M5.8 flare at S08W56",
+      "link": "https://webtools.ccmc.gsfc.nasa.gov/DONKI/view/FLR/47186/-1"
+    },
+    {
+      "type": "Solar Flare",
+      "icon": "☀",
+      "time": "2026-06-30T01:16Z",
+      "detail": "Class M1.3 flare at S07W48",
+      "link": "https://webtools.ccmc.gsfc.nasa.gov/DONKI/view/FLR/47182/-1"
+    },
+    {
+      "type": "Coronal Mass Ejection",
+      "icon": "🌊",
+      "time": "2026-06-29T22:24Z",
+      "detail": "Faint CME observed to the NNE in SOHO LASCO C2/C3, likely obscured by the pylon in GOES CCOR-1 and not in STEREO A COR2 due to a data gap starting at 2026-06-29",
+      "link": "https://webtools.ccmc.gsfc.nasa.gov/DONKI/view/CME/47179/-1"
+    },
+    {
+      "type": "Solar Flare",
+      "icon": "☀",
+      "time": "2026-06-29T21:40Z",
+      "detail": "Class M1.4 flare at N16W04",
+      "link": "https://webtools.ccmc.gsfc.nasa.gov/DONKI/view/FLR/47174/-1"
+    },
+    {
+      "type": "Coronal Mass Ejection",
+      "icon": "🌊",
+      "time": "2026-06-29T17:38Z",
+      "detail": "Faint CME observed to the W in STEREO A COR2, and faintly to the W in SOHO LASCO C2. The source is likely an eruption in the vicinity of former AR 14471, locate",
+      "link": "https://webtools.ccmc.gsfc.nasa.gov/DONKI/view/CME/47175/-1"
+    },
+    {
+      "type": "Coronal Mass Ejection",
+      "icon": "🌊",
+      "time": "2026-06-29T17:36Z",
+      "detail": "CME observed to the NNE in SOHO LASCO C2/C3, and NW in STEREO A COR2, likely obscured by the pylon in GOES CCOR-1. The source is likely in the vicinity of AR 14",
+      "link": "https://webtools.ccmc.gsfc.nasa.gov/DONKI/view/CME/47170/-1"
+    },
+    {
+      "type": "Coronal Mass Ejection",
+      "icon": "🌊",
+      "time": "2026-06-29T16:38Z",
+      "detail": "CME observed to the NNE in SOHO LASCO C2/C3, and NW in STEREO A COR2, likely obscured by the pylon in GOES CCOR-1. The source is likely in the vicinity of AR 14",
+      "link": "https://webtools.ccmc.gsfc.nasa.gov/DONKI/view/CME/47168/-1"
+    },
+    {
+      "type": "Coronal Mass Ejection",
+      "icon": "🌊",
+      "time": "2026-06-29T09:00Z",
+      "detail": "CME visible to the east in GOES CCOR-1 and faintly to the west in STEREO A COR2 imagery. The CME is not seen in real-time in SOHO LASCO C2/C3 due to a downlink ",
+      "link": "https://webtools.ccmc.gsfc.nasa.gov/DONKI/view/CME/47156/-1"
+    },
+    {
+      "type": "Coronal Mass Ejection",
+      "icon": "🌊",
+      "time": "2026-06-29T05:48Z",
+      "detail": "Faint CME seen to the SW in SOHO LASCO C2/C3 and GOES CCOR-1 and the SSW of STEREO A COR2 imagery. The potential source is a filament eruption centered around S",
+      "link": "https://webtools.ccmc.gsfc.nasa.gov/DONKI/view/CME/47163/-1"
+    },
+    {
+      "type": "Coronal Mass Ejection",
+      "icon": "🌊",
+      "time": "2026-06-29T05:09Z",
+      "detail": "CME seen to the NE in STEREO A COR2 and the NNE in SOHO LASCO C2/C3. The CME is likely obscured by the pylon in GOES CCOR-1 and is not visible. The potential so",
+      "link": "https://webtools.ccmc.gsfc.nasa.gov/DONKI/view/CME/47161/-1"
+    },
+    {
+      "type": "Coronal Mass Ejection",
+      "icon": "🌊",
+      "time": "2026-06-28T23:00Z",
+      "detail": "CME seen to the NW in SOHO LASCO C2/C3, STEREO A COR2, and GOES CCOR-1 imagery. The potential source of this event may be an eruption seen around S10W85 in STER",
+      "link": "https://webtools.ccmc.gsfc.nasa.gov/DONKI/view/CME/47154/-1"
+    },
+    {
+      "type": "Coronal Mass Ejection",
+      "icon": "🌊",
+      "time": "2026-06-28T20:12Z",
+      "detail": "Faint CME first seen to the N by SOHO LASCO C2 beginning at 2026-06-28T20:12Z, as well as by SOHO LASCO C3 in later frames. This CME is not clearly seen in GOES",
+      "link": "https://webtools.ccmc.gsfc.nasa.gov/DONKI/view/CME/47152/-1"
+    }
+  ]
+}

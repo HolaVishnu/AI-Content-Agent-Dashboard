@@ -49,11 +49,43 @@ async function main() {
   }
 
   try {
-    log('Step 4: Sending Telegram report...');
-    execSync(`node ${path.join(__dirname, 'telegram-report.js')}`, { cwd: ROOT, stdio: 'inherit' });
+    log('Step 4: Pulling real planet positions from NASA JPL Horizons...');
+    execSync(`node ${path.join(__dirname, 'pull-planet-positions.js')}`, { cwd: ROOT, stdio: 'inherit' });
     log('Step 4: Done');
   } catch (err) {
     log('Step 4 FAILED: ' + err.message);
+  }
+
+  try {
+    log('Step 5: Pulling near-Earth asteroid data from NASA NeoWs...');
+    execSync(`node ${path.join(__dirname, 'pull-neows.js')}`, { cwd: ROOT, stdio: 'inherit' });
+    log('Step 5: Done');
+  } catch (err) {
+    log('Step 5 FAILED: ' + err.message);
+  }
+
+  try {
+    log('Step 6: Pulling upcoming launches from Launch Library 2 (all agencies)...');
+    execSync(`node ${path.join(__dirname, 'pull-launches.js')}`, { cwd: ROOT, stdio: 'inherit' });
+    log('Step 6: Done');
+  } catch (err) {
+    log('Step 6 FAILED: ' + err.message);
+  }
+
+  try {
+    log('Step 7: Pulling space weather events from NASA DONKI...');
+    execSync(`node ${path.join(__dirname, 'pull-spaceweather.js')}`, { cwd: ROOT, stdio: 'inherit' });
+    log('Step 7: Done');
+  } catch (err) {
+    log('Step 7 FAILED: ' + err.message);
+  }
+
+  try {
+    log('Step 8: Sending Telegram report...');
+    execSync(`node ${path.join(__dirname, 'telegram-report.js')}`, { cwd: ROOT, stdio: 'inherit' });
+    log('Step 8: Done');
+  } catch (err) {
+    log('Step 8 FAILED: ' + err.message);
   }
 
   log('=== Daily run complete ===\n');
