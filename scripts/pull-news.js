@@ -13,6 +13,12 @@ const FEEDS = [
   { url: 'https://spacenews.com/feed/', category: 'Rockets', max: 4 },
   { url: 'https://feeds.feedburner.com/Asphaltandrubber', category: 'Bikes', max: 2 },
   { url: 'https://www.bikeexif.com/feed', category: 'Bikes', max: 3 },
+  { url: 'https://venturebeat.com/category/ai/feed/', category: 'AI', max: 5 },
+  { url: 'https://www.artificialintelligence-news.com/feed/', category: 'AI', max: 5 },
+  { url: 'https://www.cnbc.com/id/15839069/device/rss/rss.html', category: 'Stocks', max: 6 },
+  { url: 'https://feeds.a.dj.com/rss/RSSMarketsMain.xml', category: 'Stocks', max: 4 },
+  { url: 'http://feeds.bbci.co.uk/news/world/rss.xml', category: 'World', max: 6 },
+  { url: 'https://feeds.npr.org/1004/rss.xml', category: 'World', max: 4 },
 ];
 
 function decodeEntities(s) {
@@ -22,7 +28,9 @@ function decodeEntities(s) {
     .replace(/&#8217;/g, '’').replace(/&#8216;/g, '‘')
     .replace(/&#8220;/g, '“').replace(/&#8221;/g, '”')
     .replace(/&#8211;/g, '–').replace(/&#8230;/g, '…')
-    .replace(/&quot;/g, '"').replace(/&#39;/g, "'")
+    .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&apos;/g, "'")
+    .replace(/&#x2019;/gi, '’').replace(/&#x2018;/gi, '‘')
+    .replace(/&#x201c;/gi, '“').replace(/&#x201d;/gi, '”')
     .trim();
 }
 
@@ -100,9 +108,22 @@ async function main() {
 
   const top10 = picked.slice(0, 10).sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
 
+  // Four-column grouping for the Dashboard tab — Space merges the four space-ish
+  // categories used above; AI/Stocks are independent and don't affect the Daily
+  // Briefing top10 (kept separate so adding columns doesn't dilute that tab).
+  const sortByDate = items => [...items].sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+  const columns = {
+    space: sortByDate(all.filter(i => ['NASA', 'Astronomy', 'Space', 'Rockets'].includes(i.category))).slice(0, 6),
+    ai: sortByDate(all.filter(i => i.category === 'AI')).slice(0, 6),
+    bikes: sortByDate(all.filter(i => i.category === 'Bikes')).slice(0, 6),
+    world: sortByDate(all.filter(i => i.category === 'World')).slice(0, 6),
+    stocks: sortByDate(all.filter(i => i.category === 'Stocks')).slice(0, 6),
+  };
+
   const output = {
     pulledAt: new Date().toISOString(),
     items: top10,
+    columns,
   };
 
   const outPath = path.join(__dirname, '..', 'dashboard', 'news.json');

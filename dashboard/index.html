@@ -38,6 +38,24 @@
   }
 
   #starfield { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+
+  /* Cinematic backdrop — rotating real NASA photos (APOD) crossfaded underneath
+     a warm horizon-glow/lens-flare tint, shown only on Dashboard/Briefing. */
+  #cinematicBg { position: fixed; inset: 0; z-index: 0.5; pointer-events: none; opacity: 0; transition: opacity .6s ease; }
+  #cinematicBg.active { opacity: 1; }
+  .bg-photo-layer {
+    position: absolute; inset: 0; background-size: cover; background-position: center;
+    opacity: 0; transition: opacity 2.5s ease; filter: brightness(0.42) saturate(1.15) contrast(1.05);
+  }
+  .bg-photo-layer.show { opacity: 1; }
+  .bg-gradient-overlay {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 78% 18%, rgba(255,221,150,0.22), transparent 60%),
+      radial-gradient(circle 420px at 78% 18%, rgba(255,210,140,0.3), transparent 70%),
+      linear-gradient(to bottom, rgba(8,10,28,0.25) 0%, rgba(20,16,28,0.4) 55%, rgba(58,36,22,0.4) 85%, rgba(70,40,18,0.35) 100%);
+  }
+
   .content { position: relative; z-index: 1; }
 
   body::after {
@@ -113,6 +131,13 @@
   .pulse-dot { width: 7px; height: 7px; background: var(--aurora); border-radius: 50%; animation: pulse-glow 2s infinite; }
   @keyframes pulse-glow { 0%, 100% { opacity: 1; box-shadow: 0 0 6px var(--aurora); } 50% { opacity: 0.3; box-shadow: none; } }
   .utc-clock { font-family: var(--mono); font-size: 14px; font-weight: 700; color: var(--star); letter-spacing: 1.5px; }
+  .music-toggle {
+    font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+    background: transparent; border: 1px solid var(--border-bright); color: var(--star);
+    padding: 6px 12px; border-radius: 5px; cursor: pointer; transition: all .2s;
+  }
+  .music-toggle:hover { border-color: var(--aurora); color: var(--aurora); background: rgba(0,245,212,0.08); }
+  .music-toggle.playing { border-color: var(--aurora); color: var(--aurora); box-shadow: 0 0 12px rgba(0,245,212,0.3); animation: pulse-glow 2s infinite; }
 
   /* VIEW SWITCH */
   .view { display: none; }
@@ -136,8 +161,9 @@
   .scroll-dot.active { background: var(--aurora); box-shadow: 0 0 10px var(--aurora); border-color: var(--aurora); }
 
   /* ============ HOME (scroll-snap) ============ */
-  #view-home { scroll-snap-type: y mandatory; overflow-y: auto; height: 100vh; }
-  .snap-section { height: 100vh; scroll-snap-align: start; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
+  /* Continuous flowing page — no hard scroll-snap stops between sections */
+  #view-home { overflow-y: auto; height: 100vh; }
+  .snap-section { min-height: 100vh; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
 
   /* HERO */
   .hero-eyebrow {
@@ -161,8 +187,13 @@
     width: 100%; height: 100%; border-radius: 50%; overflow: hidden;
     box-shadow: 0 0 60px rgba(123,47,190,0.45), 0 0 0 2px var(--border-bright);
     background: radial-gradient(circle at 35% 25%, #1c1c3a, #07070f 70%);
+    animation: floatDrift 6s ease-in-out infinite;
   }
-  .hero-portrait svg { width: 100%; height: 100%; display: block; }
+  .hero-portrait svg, .hero-portrait img { width: 100%; height: 100%; display: block; object-fit: cover; object-position: center 32%; }
+  @keyframes floatDrift {
+    0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+    50% { transform: translateY(-10px) rotate(-1.5deg) scale(1.015); }
+  }
   .hero-click-hint {
     position: absolute; bottom: -30px; left: 50%; transform: translateX(-50%);
     font-family: var(--mono); font-size: 8.5px; letter-spacing: 1.5px; color: var(--muted);
@@ -258,6 +289,27 @@
   .comet-pill { border-color: rgba(255,176,217,0.3); }
   .comet-pill:hover, .comet-pill.active { border-color: #ffb0d9; color: #ffb0d9; background: rgba(255,176,217,0.08); }
 
+  /* NEAR-EARTH OBJECTS PANEL */
+  .neo-panel {
+    position: absolute; top: 240px; left: 14px; width: 270px; max-height: calc(100% - 280px);
+    background: rgba(10,10,26,0.85); border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px; z-index: 20; backdrop-filter: blur(14px); display: flex; flex-direction: column;
+  }
+  .neo-panel-title { font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--star); letter-spacing: 1px; }
+  .neo-panel-title span { color: var(--aurora); }
+  .neo-panel-sub { font-family: var(--mono); font-size: 8.5px; color: var(--muted); margin: 4px 0 12px; letter-spacing: 0.5px; }
+  .neo-list { display: flex; flex-direction: column; gap: 6px; overflow-y: auto; max-height: 360px; }
+  .neo-item {
+    padding: 8px 10px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 6px;
+    cursor: pointer; transition: border-color .2s, background .2s;
+  }
+  .neo-item:hover { border-color: var(--border-bright); background: rgba(255,255,255,0.05); }
+  .neo-item.hazardous { border-color: rgba(255,68,102,0.35); }
+  .neo-item-name { font-family: var(--mono); font-size: 10px; color: var(--star); font-weight: 700; }
+  .neo-item-meta { font-family: var(--mono); font-size: 8.5px; color: var(--muted); margin-top: 3px; }
+  .neo-item.hazardous .neo-item-meta .haz-tag { color: var(--danger); }
+  .neo-empty { font-family: var(--mono); font-size: 10px; color: var(--muted); }
+
   /* CLICK-TO-ZOOM DETAIL PANEL */
   .body-detail-panel {
     position: absolute; top: 240px; right: 14px; width: 300px; max-height: calc(100% - 280px); overflow-y: auto;
@@ -292,28 +344,6 @@
   /* GALAXY + UNIVERSE */
   #galaxyCanvasWrap, #universeCanvasWrap { position: absolute; inset: 0; z-index: 1; }
   #galaxyCanvas, #universeCanvas { display: block; width: 100%; height: 100%; }
-
-  /* DAILY BRIEFING */
-  .briefing-list { display: flex; flex-direction: column; gap: 10px; max-width: 900px; }
-  .briefing-item {
-    display: flex; gap: 14px; align-items: flex-start; padding: 16px 18px; background: var(--card);
-    border: 1px solid var(--border); border-radius: 8px; transition: border-color .2s, transform .15s; text-decoration: none;
-  }
-  .briefing-item:hover { border-color: var(--border-bright); transform: translateX(3px); }
-  .briefing-rank { font-family: var(--mono); font-size: 13px; color: var(--nebula-light); font-weight: 700; width: 24px; flex-shrink: 0; }
-  .briefing-body { flex: 1; min-width: 0; }
-  .briefing-cat {
-    font-family: var(--mono); font-size: 8.5px; letter-spacing: 1.5px; text-transform: uppercase;
-    padding: 2px 8px; border-radius: 10px; display: inline-block; margin-bottom: 6px;
-  }
-  .briefing-cat.nasa { background: rgba(0,245,212,0.15); color: var(--aurora); }
-  .briefing-cat.astronomy { background: rgba(123,47,190,0.2); color: var(--nebula-light); }
-  .briefing-cat.space { background: rgba(27,79,216,0.2); color: #6f95ff; }
-  .briefing-cat.rockets { background: rgba(255,68,102,0.15); color: var(--danger); }
-  .briefing-cat.bikes { background: rgba(255,215,0,0.15); color: var(--gold); }
-  .briefing-title { font-size: 14px; color: var(--star); line-height: 1.4; margin-bottom: 4px; }
-  .briefing-meta { font-family: var(--mono); font-size: 9.5px; color: var(--muted); letter-spacing: 0.5px; }
-  .briefing-empty { font-family: var(--mono); font-size: 11px; color: var(--muted); padding: 20px; }
 
   /* ===================== DASHBOARD VIEW (unchanged styling) ===================== */
   #view-dashboard { padding-top: 56px; }
@@ -386,6 +416,20 @@
   .bottom-grid { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 14px; margin-bottom: 28px; }
   @media (max-width: 1100px) { .bottom-grid { grid-template-columns: 1fr 1fr; } }
   @media (max-width: 700px) { .bottom-grid { grid-template-columns: 1fr; } }
+
+  /* SIGNAL FEEDS — 5-column dashboard news section */
+  .feed-columns { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 28px; }
+  @media (max-width: 1300px) { .feed-columns { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 800px) { .feed-columns { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 500px) { .feed-columns { grid-template-columns: 1fr; } }
+  .feed-col { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .feed-col-title { font-family: var(--mono); font-size: 12px; font-weight: 700; letter-spacing: 1px; color: var(--star); padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+  .feed-col-list { display: flex; flex-direction: column; gap: 8px; }
+  .feed-item { display: block; padding: 9px 10px; background: rgba(255,255,255,0.02); border-radius: 6px; border: 1px solid var(--border); text-decoration: none; transition: border-color .2s, background .2s; }
+  .feed-item:hover { border-color: var(--border-bright); background: rgba(255,255,255,0.05); }
+  .feed-item-title { font-size: 11.5px; line-height: 1.45; color: var(--star); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .feed-item-meta { font-family: var(--mono); font-size: 8.5px; color: var(--muted); margin-top: 5px; letter-spacing: 0.5px; }
+  .feed-col-empty { font-family: var(--mono); font-size: 10px; color: var(--muted); padding: 10px 0; }
   .panel { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; }
   .panel-title { font-family: var(--mono); font-size: 9px; letter-spacing: 2.5px; color: var(--nebula-light); text-transform: uppercase; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
   .post-list { display: flex; flex-direction: column; gap: 8px; }
@@ -416,6 +460,26 @@
   .cal-orb { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
   .cal-text { font-size: 11px; color: var(--star); flex: 1; line-height: 1.4; }
   .cal-format { font-family: var(--mono); font-size: 9px; color: var(--muted); margin-top: 1px; }
+
+  /* LIVE SPACE DATA — launches + space weather */
+  .launch-list, .weather-list { display: flex; flex-direction: column; gap: 8px; max-height: 280px; overflow-y: auto; }
+  .launch-item, .weather-item {
+    padding: 10px 12px; background: rgba(255,255,255,0.02); border-radius: 6px; border: 1px solid var(--border);
+    transition: border-color .2s;
+  }
+  .launch-item:hover, .weather-item:hover { border-color: var(--border-bright); }
+  .launch-item-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .launch-name { font-size: 11.5px; color: var(--star); font-weight: 600; line-height: 1.4; }
+  .launch-status { font-family: var(--mono); font-size: 8px; letter-spacing: 1px; text-transform: uppercase; padding: 2px 7px; border-radius: 8px; flex-shrink: 0; background: rgba(0,245,212,0.12); color: var(--aurora); }
+  .launch-status.tbd { background: rgba(255,215,0,0.12); color: var(--gold); }
+  .launch-meta { font-family: var(--mono); font-size: 9px; color: var(--muted); margin-top: 5px; }
+  .weather-item-top { display: flex; align-items: center; gap: 8px; }
+  .weather-icon { font-size: 13px; }
+  .weather-type { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.5px; color: var(--star); font-weight: 700; }
+  .weather-detail { font-size: 10.5px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+  .weather-time { font-family: var(--mono); font-size: 8.5px; color: var(--muted); margin-top: 4px; }
+  .live-data-empty { font-family: var(--mono); font-size: 10px; color: var(--muted); padding: 10px 0; }
+
   footer { text-align: center; padding: 24px 32px; border-top: 1px solid var(--border); font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 1px; }
   footer span { color: var(--nebula-light); }
   .glow-purple { text-shadow: 0 0 20px rgba(123,47,190,0.8); }
@@ -429,6 +493,11 @@
 <body>
 
 <canvas id="starfield"></canvas>
+<div id="cinematicBg">
+  <div class="bg-photo-layer show" id="bgPhotoA"></div>
+  <div class="bg-photo-layer" id="bgPhotoB"></div>
+  <div class="bg-gradient-overlay"></div>
+</div>
 <div id="cursorGlow"></div>
 <div id="hoverTooltip"><div class="tt-name" id="tt-name"></div><div class="tt-type" id="tt-type"></div><div class="tt-desc" id="tt-desc"></div></div>
 
@@ -445,10 +514,15 @@
     <button class="nav-tab" data-view="briefing">◈ Daily Briefing</button>
   </div>
   <div class="topbar-right">
+    <button class="music-toggle" id="musicToggle" title="Toggle background music">⏳ Loading…</button>
     <div class="status-pill" id="liveRefreshPill" title="Dashboard auto-refreshes data.json every 30s"><div class="pulse-dot"></div><span id="liveRefreshText">LIVE · SYNCING…</span></div>
     <div class="utc-clock" id="clock">--:--:-- UTC</div>
   </div>
 </header>
+
+<!-- Background music: official YouTube embed (browsers block autoplay-with-sound,
+     so this stays silent/paused until the listener clicks the Music toggle). -->
+<div id="ytPlayerHost" style="position:fixed; left:-9999px; top:0; width:320px; height:180px; pointer-events:none;"></div>
 
 <!-- scroll dots only visible on home -->
 <div class="scroll-dots" id="scrollDots">
@@ -480,9 +554,14 @@
   <section class="snap-section" id="sec-solar">
     <div class="hud-corner tl"></div><div class="hud-corner tr"></div>
     <div class="hud-corner bl"></div><div class="hud-corner br"></div>
-    <div class="hud-title"><h2>Solar System</h2><p>REAL-TIME ORBITAL SIMULATION — COMETS SHOWN AT ACTUAL CURRENT POSITION</p></div>
+    <div class="hud-title"><h2>Solar System</h2><p>POSITIONS FROM NASA JPL HORIZONS — REAL DATA, ACCELERATED MOTION</p></div>
     <div id="solarCanvasWrap"></div>
     <div class="body-pills" id="bodyPills"></div>
+    <div class="neo-panel" id="neoPanel">
+      <div class="neo-panel-title">☄️ Near-Earth Objects <span id="neoCount"></span></div>
+      <div class="neo-panel-sub">Real close approaches, next 7 days — NASA NeoWs</div>
+      <div class="neo-list" id="neoList"></div>
+    </div>
     <div class="sim-controls">
       <button class="sim-btn" id="simPause">⏸ Pause</button>
       <label>Time Warp</label>
@@ -529,8 +608,14 @@
 <!-- ===================== VIEW: DAILY BRIEFING ===================== -->
 <div class="view" id="view-briefing">
   <div class="main" style="padding-top:88px">
-    <div class="section-label">◈ DAILY BRIEFING — TOP 10 ACROSS ASTRONOMY · NASA · SPACE · ROCKETS · BIKES</div>
-    <div id="briefingList" class="briefing-list"></div>
+    <div class="section-label">◈ SIGNAL FEEDS — SPACE · AI · BIKES &amp; TRAVEL · WORLD NEWS · STOCKS</div>
+    <div class="feed-columns" id="feedColumns">
+      <div class="feed-col" data-col="space"><div class="feed-col-title">🚀 Space</div><div class="feed-col-list" id="feedSpace"></div></div>
+      <div class="feed-col" data-col="ai"><div class="feed-col-title">🤖 AI</div><div class="feed-col-list" id="feedAi"></div></div>
+      <div class="feed-col" data-col="bikes"><div class="feed-col-title">🏍️ Bikes &amp; Travel</div><div class="feed-col-list" id="feedBikes"></div></div>
+      <div class="feed-col" data-col="world"><div class="feed-col-title">🌍 World News</div><div class="feed-col-list" id="feedWorld"></div></div>
+      <div class="feed-col" data-col="stocks"><div class="feed-col-title">📈 Stocks</div><div class="feed-col-list" id="feedStocks"></div></div>
+    </div>
   </div>
 </div>
 
@@ -552,6 +637,12 @@
       <div class="panel"><div class="panel-title">◈ Top Transmissions</div><div class="post-list" id="topPosts"></div></div>
       <div class="panel"><div class="panel-title">◈ Sector Scan — Competitors</div><div class="comp-list" id="compList"></div></div>
       <div class="panel"><div class="panel-title">◈ Mission Schedule — 7 Days</div><div class="cal-list" id="calList"></div></div>
+    </div>
+
+    <div class="section-label" style="margin-top:8px">◈ LIVE SPACE DATA — NASA &amp; GLOBAL AGENCY APIs</div>
+    <div class="bottom-grid">
+      <div class="panel"><div class="panel-title">◈ Upcoming Launches — All Agencies</div><div class="launch-list" id="launchList"></div></div>
+      <div class="panel"><div class="panel-title">◈ Space Weather — Last 7 Days</div><div class="weather-list" id="weatherList"></div></div>
     </div>
   </div>
   <footer>MISSION CONTROL DASHBOARD &nbsp;·&nbsp; <span>@vpspaceman</span> &nbsp;·&nbsp; BUILT WITH CLAUDE AI &nbsp;·&nbsp; <span id="foot-date">--</span></footer>
@@ -580,6 +671,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://www.youtube.com/iframe_api"></script>
 <script src="app.js"></script>
 </body>
 </html>
