@@ -192,8 +192,7 @@ window.addEventListener('keydown', e => { if (e.key === 'Escape') heroLightbox.c
 const homeView = document.getElementById('view-home');
 const sections = [
   document.getElementById('sec-hero'),
-  document.getElementById('sec-solar'),
-  document.getElementById('sec-galaxy'),
+  document.getElementById('sec-galaxy'),   // merged: galaxy map + zoomable star systems
   document.getElementById('sec-universe'),
   document.getElementById('sec-const'),
 ];
@@ -217,17 +216,27 @@ sections.forEach(s => dotObserver.observe(s));
 // once 50% scrolled into view, so scrolling through it showed solid black
 // for a moment first (looked like a broken "split screen"). Pre-loading
 // ~1 viewport ahead means the canvas is already rendering by the time it's seen.
+// The Sol 3D scene and exoplanet-system scene are NOT pre-loaded here — they're
+// lazily built on demand the first time the visitor zooms into that star (see
+// enterSystem()), since most visitors will only ever look at a few systems.
 const lazyInitObserver = new IntersectionObserver(entries => {
   entries.forEach(entry => {
     if (!entry.isIntersecting) return;
     const idx = sections.indexOf(entry.target);
-    if (idx === 1 && !solarInited) { solarInited = true; initSolarSystem(); }
-    if (idx === 2 && !galaxyInited) { galaxyInited = true; initGalaxy(); }
-    if (idx === 3 && !universeInited) { universeInited = true; initUniverse(); }
-    if (idx === 4 && !constInited) { constInited = true; initConstellations(); }
+    if (idx === 1 && !galaxyInited) { galaxyInited = true; initGalaxy(); }
+    if (idx === 2 && !universeInited) { universeInited = true; initUniverse(); }
+    if (idx === 3 && !constInited) { constInited = true; initConstellations(); }
   });
 }, { root: homeView, rootMargin: '100% 0px 100% 0px', threshold: 0 });
 sections.forEach(s => lazyInitObserver.observe(s));
+
+// Shared detail panel close button — dispatches to whichever system (Sol or an
+// exo star system) is currently zoomed in, since both reuse the same panel DOM.
+document.getElementById('bodyDetailClose').addEventListener('click', () => {
+  if (document.getElementById('exoSystemLayer').classList.contains('layer-active')) deselectExoBody();
+  else deselectBody();
+});
+document.getElementById('backToGalaxyBtn').addEventListener('click', exitToGalaxyMap);
 
 // ══════════════════════════════════════════════════════════════════════════
 // DASHBOARD LOGIC
@@ -1002,8 +1011,6 @@ function initSolarSystem() {
     }
   });
 
-  document.getElementById('bodyDetailClose').addEventListener('click', deselectBody);
-
   document.getElementById('simPause').addEventListener('click', () => {
     simRunning = !simRunning;
     document.getElementById('simPause').textContent = simRunning ? '⏸ Pause' : '▶ Resume';
@@ -1399,7 +1406,71 @@ const GALAXY_REGIONS = [
     desc:'A sparse, roughly spherical region of old stars and globular clusters surrounding the entire galactic disk.' },
 ];
 
-let galaxyCtx, galaxyParticles = [], galaxyHoverKey = null, galaxyRotation = 0;
+// Real, notable star systems plotted on the galaxy map — click any one to zoom
+// into its system. Sol uses the existing full 3D engine (real JPL Horizons
+// positions, Kepler comets, moons). The rest are real exoplanet discoveries
+// rendered with a lighter-weight scene — orbital periods/distances are the
+// published real values; only the screen layout (rNorm/angle) is artistic so
+// the points are readable and spread out across the disk.
+const STAR_SYSTEMS = [
+  { key:'sol', name:'Sol', isSol:true, rNorm:0.42, angle:0, distanceLy:0, spectral:'G2V Yellow Dwarf',
+    desc:'Our home star and the only system confirmed to host life — 8 planets, dozens of moons, countless comets and asteroids.' },
+  { key:'alpha-centauri', name:'Alpha Centauri', rNorm:0.40, angle:-0.55, distanceLy:4.37, spectral:'G2V + K1V binary, + Proxima Centauri (M5.5Ve red dwarf)',
+    markerColor:'200,220,255', starColor:0xfff0c8, starRadius:3.6,
+    desc:'The nearest star system to the Sun — a triple system. Proxima b, a roughly Earth-sized planet, was found in Proxima Centauri\'s habitable zone in 2016.',
+    planets:[
+      { key:'proxima-b', name:'Proxima b', radius:0.62, sceneOrbit:9, orbitAU:0.0485, periodDays:11.2, color:0x6fae6f,
+        desc:'An Earth-sized rocky planet in Proxima Centauri\'s habitable zone — the closest known exoplanet to our Sun.' },
+    ]},
+  { key:'51-pegasi', name:'51 Pegasi', rNorm:0.50, angle:0.35, distanceLy:51, spectral:'G2IV-V Sun-like Star',
+    markerColor:'255,235,190', starColor:0xfff2c0, starRadius:4.4,
+    desc:'A Sun-like star where the first exoplanet around a Sun-like star was discovered (1995) — work that won the 2019 Nobel Prize in Physics.',
+    planets:[
+      { key:'51-peg-b', name:'51 Pegasi b "Dimidium"', radius:1.9, sceneOrbit:9, orbitAU:0.0527, periodDays:4.23, color:0xd9a06b,
+        desc:'The first exoplanet ever discovered orbiting a Sun-like star (1995) — a scorching "hot Jupiter" that completes an orbit in just over 4 days.' },
+    ]},
+  { key:'trappist-1', name:'TRAPPIST-1', rNorm:0.46, angle:1.05, distanceLy:40, spectral:'M8V Ultra-Cool Red Dwarf',
+    markerColor:'255,170,150', starColor:0xff8a6e, starRadius:2.2,
+    desc:'An ultra-cool red dwarf with 7 roughly Earth-sized planets — 3 sit in the habitable zone. Discovered via the Spitzer Space Telescope in 2017.',
+    planets:[
+      { key:'trappist-b', name:'TRAPPIST-1b', radius:0.59, sceneOrbit:7, orbitAU:0.0115, periodDays:1.51, color:0xb08c7a, desc:'Innermost of the seven — too hot for liquid water.' },
+      { key:'trappist-c', name:'TRAPPIST-1c', radius:0.58, sceneOrbit:9, orbitAU:0.0158, periodDays:2.42, color:0xc89c84, desc:'Likely rocky with a thick, Venus-like atmosphere.' },
+      { key:'trappist-d', name:'TRAPPIST-1d', radius:0.41, sceneOrbit:11, orbitAU:0.0223, periodDays:4.05, color:0x9fcf9f, desc:'Smallest of the seven — sits on the inner edge of the habitable zone.', habitable:true },
+      { key:'trappist-e', name:'TRAPPIST-1e', radius:0.56, sceneOrbit:13.5, orbitAU:0.0293, periodDays:6.10, color:0x6fae6f, desc:'Widely considered the most Earth-like of the seven — squarely in the habitable zone.', habitable:true },
+      { key:'trappist-f', name:'TRAPPIST-1f', radius:0.62, sceneOrbit:16.5, orbitAU:0.0385, periodDays:9.21, color:0x7fb8c9, desc:'Habitable-zone candidate, possibly water-ice rich.', habitable:true },
+      { key:'trappist-g', name:'TRAPPIST-1g', radius:0.66, sceneOrbit:19.5, orbitAU:0.0469, periodDays:12.35, color:0x6fa0c9, desc:'Outer habitable-zone planet, slightly larger than Earth.', habitable:true },
+      { key:'trappist-h', name:'TRAPPIST-1h', radius:0.34, sceneOrbit:23, orbitAU:0.0619, periodDays:18.77, color:0xb0c9d9, desc:'Coldest and outermost confirmed planet — likely an ice world.' },
+    ]},
+  { key:'kepler-186', name:'Kepler-186', rNorm:0.68, angle:-1.3, distanceLy:582, spectral:'M1V Red Dwarf',
+    markerColor:'255,180,160', starColor:0xff9a78, starRadius:2.6,
+    desc:'A faint red dwarf hosting Kepler-186f — the first Earth-sized planet ever found within another star\'s habitable zone (2014).',
+    planets:[
+      { key:'kepler-186f', name:'Kepler-186f', radius:0.68, sceneOrbit:13, orbitAU:0.432, periodDays:130, color:0x6fae6f, desc:'The first Earth-sized planet discovered within another star\'s habitable zone.', habitable:true },
+    ]},
+  { key:'hd-209458', name:'HD 209458', rNorm:0.33, angle:-2.05, distanceLy:159, spectral:'G0V Sun-like Star',
+    markerColor:'255,244,225', starColor:0xfff5d8, starRadius:4.6,
+    desc:'Home to "Osiris" — the first exoplanet ever observed transiting its star (1999), and the first found with a detectable atmosphere.',
+    planets:[
+      { key:'osiris', name:'Osiris (HD 209458 b)', radius:1.9, sceneOrbit:9, orbitAU:0.047, periodDays:3.52, color:0xd9a06b,
+        desc:'The first transiting exoplanet ever detected (1999) — a puffy "hot Jupiter" actively losing its atmosphere to space.' },
+    ]},
+];
+
+let galaxyCtx, galaxyParticles = [], galaxyHoverKey = null, galaxyHoverStarKey = null, galaxyRotation = 0;
+
+function starScreenPos(system, cx, cy, maxR) {
+  const a = system.angle - galaxyRotation * 0.3; // slow counter-drift, same motion as the original "you are here" marker
+  const r = system.rNorm * maxR;
+  return { x: cx + Math.cos(a) * r, y: cy + Math.sin(a) * r * 0.42 };
+}
+
+function hitTestStarSystems(mx, my, cx, cy, maxR) {
+  for (const sys of STAR_SYSTEMS) {
+    const { x, y } = starScreenPos(sys, cx, cy, maxR);
+    if (Math.hypot(mx - x, my - y) < 14) return sys;
+  }
+  return null;
+}
 
 function initGalaxy() {
   const canvasEl = document.getElementById('galaxyCanvas');
@@ -1430,6 +1501,18 @@ function initGalaxy() {
     const mx = e.clientX - rect.left, my = e.clientY - rect.top;
     const cx = canvasEl.width/2, cy = canvasEl.height/2;
     const maxR = Math.min(canvasEl.width, canvasEl.height) * 0.46;
+
+    const starHit = hitTestStarSystems(mx, my, cx, cy, maxR);
+    if (starHit) {
+      galaxyHoverKey = null; galaxyHoverStarKey = starHit.key;
+      showTooltip(e.clientX, e.clientY, starHit.name,
+        starHit.isSol ? 'You Are Here · Click to Explore' : `${starHit.distanceLy.toLocaleString()} ly away · Click to Explore`,
+        starHit.desc);
+      canvasEl.style.cursor = 'pointer';
+      return;
+    }
+    if (galaxyHoverStarKey) galaxyHoverStarKey = null;
+
     const dist = Math.hypot(mx-cx, my-cy) / maxR;
     let hit = null;
     for (const region of GALAXY_REGIONS) {
@@ -1441,9 +1524,19 @@ function initGalaxy() {
       canvasEl.style.cursor = 'pointer';
     } else if (galaxyHoverKey) {
       galaxyHoverKey = null; hideTooltip(); canvasEl.style.cursor = 'default';
+    } else {
+      hideTooltip(); canvasEl.style.cursor = 'default';
     }
   });
-  canvasEl.addEventListener('mouseleave', () => { galaxyHoverKey = null; hideTooltip(); });
+  canvasEl.addEventListener('mouseleave', () => { galaxyHoverKey = null; galaxyHoverStarKey = null; hideTooltip(); });
+  canvasEl.addEventListener('click', (e) => {
+    const rect = canvasEl.getBoundingClientRect();
+    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+    const cx = canvasEl.width/2, cy = canvasEl.height/2;
+    const maxR = Math.min(canvasEl.width, canvasEl.height) * 0.46;
+    const starHit = hitTestStarSystems(mx, my, cx, cy, maxR);
+    if (starHit) enterSystem(starHit.key);
+  });
 
   window.addEventListener('resize', onGalaxyResize);
   animateGalaxy();
@@ -1456,6 +1549,33 @@ function onGalaxyResize() {
   const w = wrap.clientWidth, h = wrap.clientHeight;
   if (!w || !h) return;
   canvasEl.width = w; canvasEl.height = h;
+}
+
+function drawStarSystems(cx, cy, maxR, w) {
+  STAR_SYSTEMS.forEach(sys => {
+    const { x, y } = starScreenPos(sys, cx, cy, maxR);
+    const isHover = sys.key === galaxyHoverStarKey;
+    const baseColor = sys.isSol ? '0,245,212' : (sys.markerColor || '232,232,255');
+    const dotR = sys.isSol ? 5 : (isHover ? 4.5 : 3.2);
+
+    galaxyCtx.beginPath(); galaxyCtx.arc(x, y, dotR, 0, Math.PI*2);
+    galaxyCtx.fillStyle = `rgba(${baseColor},${isHover || sys.isSol ? 1 : 0.85})`;
+    galaxyCtx.shadowColor = `rgba(${baseColor},1)`; galaxyCtx.shadowBlur = isHover || sys.isSol ? 18 : 7;
+    galaxyCtx.fill(); galaxyCtx.shadowBlur = 0;
+
+    if (isHover || sys.isSol) {
+      const label = sys.isSol ? '☉ SOL — YOU ARE HERE' : sys.name.toUpperCase();
+      galaxyCtx.font = 'bold 10px "Space Mono", monospace';
+      const metrics = galaxyCtx.measureText(label);
+      const lx = Math.min(Math.max(x, metrics.width/2 + 10), w - metrics.width/2 - 10);
+      const ly = y - dotR - 10;
+      galaxyCtx.fillStyle = 'rgba(8,8,20,0.85)';
+      galaxyCtx.fillRect(lx - metrics.width/2 - 6, ly - 13, metrics.width + 12, 17);
+      galaxyCtx.fillStyle = sys.isSol ? '#00F0D0' : '#EFEFFC';
+      galaxyCtx.textAlign = 'center';
+      galaxyCtx.fillText(label, lx, ly - 1);
+    }
+  });
 }
 
 function animateGalaxy() {
@@ -1524,33 +1644,286 @@ function animateGalaxy() {
     galaxyCtx.fillStyle = isHover ? '#00F5D4' : '#E8E8FF';
     galaxyCtx.textAlign = 'left';
     galaxyCtx.fillText(label, lx, ly + 2);
-
-    if (region.key === 'orion-arm') {
-      const a = -galaxyRotation * 0.3;
-      const sx = cx + Math.cos(a) * r, sy = cy + Math.sin(a) * r * 0.42;
-      galaxyCtx.beginPath(); galaxyCtx.arc(sx, sy, 4.5, 0, Math.PI*2);
-      galaxyCtx.fillStyle = '#00F5D4'; galaxyCtx.shadowColor = '#00F5D4'; galaxyCtx.shadowBlur = 16;
-      galaxyCtx.fill(); galaxyCtx.shadowBlur = 0;
-      const sunLabel = '☉ YOU ARE HERE';
-      galaxyCtx.font = 'bold 10px "Space Mono", monospace';
-      const sunMetrics = galaxyCtx.measureText(sunLabel);
-      galaxyCtx.fillStyle = 'rgba(10,10,26,0.78)';
-      galaxyCtx.fillRect(sx - sunMetrics.width/2 - 5, sy - 26, sunMetrics.width + 10, 16);
-      galaxyCtx.fillStyle = '#00F5D4';
-      galaxyCtx.textAlign = 'center';
-      galaxyCtx.fillText(sunLabel, sx, sy - 14);
-    }
   });
+
+  drawStarSystems(cx, cy, maxR, w);
 
   galaxyCtx.font = 'bold 12px "Space Mono", monospace';
   galaxyCtx.fillStyle = '#E8E8FF';
   galaxyCtx.textAlign = 'center';
-  const caption = 'MILKY WAY — ~100,000 LY DIAMETER · ~100–400 BILLION STARS';
+  const caption = 'MILKY WAY — ~100,000 LY DIAMETER · ~100–400 BILLION STARS · CLICK A STAR TO ZOOM IN';
   const capW = galaxyCtx.measureText(caption).width;
   galaxyCtx.fillStyle = 'rgba(10,10,26,0.8)';
   galaxyCtx.fillRect(cx - capW/2 - 10, cy + maxR*0.42 + 16, capW + 20, 22);
   galaxyCtx.fillStyle = '#E8E8FF';
   galaxyCtx.fillText(caption, cx, cy + maxR*0.42 + 31);
+}
+
+// ── ZOOM NAVIGATION — galaxy map ↔ Sol's solar system ↔ other star systems ──
+function setGalaxyHud(title, sub) {
+  const el = document.getElementById('galaxyHudTitle');
+  el.querySelector('h2').textContent = title;
+  el.querySelector('p').textContent = sub;
+}
+
+function enterSystem(key) {
+  const sys = STAR_SYSTEMS.find(s => s.key === key);
+  if (!sys) return;
+  document.getElementById('galaxyCanvasWrap').classList.remove('layer-active');
+  document.getElementById('backToGalaxyBtn').classList.add('visible');
+
+  if (sys.isSol) {
+    document.getElementById('exoSystemLayer').classList.remove('layer-active');
+    document.getElementById('solarSystemLayer').classList.add('layer-active');
+    if (!solarInited) { solarInited = true; initSolarSystem(); }
+    onSolarResize();
+    setGalaxyHud('Sol — Solar System', 'POSITIONS FROM NASA JPL HORIZONS — REAL DATA, ACCELERATED MOTION');
+  } else {
+    document.getElementById('solarSystemLayer').classList.remove('layer-active');
+    document.getElementById('exoSystemLayer').classList.add('layer-active');
+    initExoSystem(sys);
+    setGalaxyHud(sys.name, `${sys.spectral.toUpperCase()} · ${sys.distanceLy.toLocaleString()} LIGHT-YEARS FROM SOL`);
+  }
+}
+
+function exitToGalaxyMap() {
+  document.getElementById('galaxyCanvasWrap').classList.add('layer-active');
+  document.getElementById('solarSystemLayer').classList.remove('layer-active');
+  document.getElementById('exoSystemLayer').classList.remove('layer-active');
+  document.getElementById('backToGalaxyBtn').classList.remove('visible');
+  deselectBody();
+  deselectExoBody();
+  setGalaxyHud('The Milky Way', 'OUR HOME GALAXY — CLICK ANY STAR TO ZOOM INTO ITS SOLAR SYSTEM');
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// EXOPLANET SYSTEMS (Three.js — lightweight scene shared across all non-Sol
+// star systems; rebuilt on each visit, reusing one renderer/camera/controls)
+// ══════════════════════════════════════════════════════════════════════════
+let exoRenderer, exoCamera, exoScene, exoControls, exoRendererReady = false;
+let exoPlanetMeshes = [], exoOrbitGroup, exoSelected = null, exoCameraFly = null, currentExoSys = null;
+const EXO_SPEED_K = 0.0524; // tuned so the fastest known orbit (~1.5 days) completes in ~3s on screen
+
+function ensureExoRenderer() {
+  if (exoRendererReady) return;
+  exoRendererReady = true;
+  const wrap = document.getElementById('exoCanvasWrap');
+  const w = wrap.clientWidth || 800, h = wrap.clientHeight || 600;
+
+  exoCamera = new THREE.PerspectiveCamera(50, w/h, 0.1, 2000);
+  exoRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  exoRenderer.setSize(w, h);
+  exoRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  wrap.appendChild(exoRenderer.domElement);
+
+  exoControls = new THREE.OrbitControls(exoCamera, exoRenderer.domElement);
+  exoControls.enableDamping = true;
+  exoControls.dampingFactor = 0.08;
+  exoControls.minDistance = 4;
+  exoControls.maxDistance = 220;
+
+  const raycaster = new THREE.Raycaster();
+  const mouse = new THREE.Vector2();
+  exoRenderer.domElement.addEventListener('mousemove', (e) => {
+    const rect = exoRenderer.domElement.getBoundingClientRect();
+    mouse.x = ((e.clientX-rect.left)/rect.width)*2-1;
+    mouse.y = -((e.clientY-rect.top)/rect.height)*2+1;
+    raycaster.setFromCamera(mouse, exoCamera);
+    const hits = raycaster.intersectObjects(exoPlanetMeshes.map(p=>p.mesh));
+    if (hits.length) {
+      const d = hits[0].object.userData;
+      document.querySelectorAll('#exoPills .body-pill').forEach(el => el.classList.toggle('active', el.dataset.key===d.key));
+      showTooltip(e.clientX, e.clientY, d.name, d.type, d.desc);
+      exoRenderer.domElement.style.cursor = 'pointer';
+    } else {
+      document.querySelectorAll('#exoPills .body-pill').forEach(el => el.classList.remove('active'));
+      hideTooltip();
+      exoRenderer.domElement.style.cursor = 'default';
+    }
+  });
+  exoRenderer.domElement.addEventListener('mouseleave', hideTooltip);
+  exoRenderer.domElement.addEventListener('click', (e) => {
+    const rect = exoRenderer.domElement.getBoundingClientRect();
+    mouse.x = ((e.clientX-rect.left)/rect.width)*2-1;
+    mouse.y = -((e.clientY-rect.top)/rect.height)*2+1;
+    raycaster.setFromCamera(mouse, exoCamera);
+    const hits = raycaster.intersectObjects(exoPlanetMeshes.map(p=>p.mesh));
+    if (hits.length) {
+      const body = exoPlanetMeshes.find(p => p.mesh === hits[0].object);
+      selectExoBody(body);
+    } else {
+      deselectExoBody();
+    }
+  });
+
+  window.addEventListener('resize', onExoResize);
+  animateExo();
+}
+
+function disposeExoScene() {
+  if (!exoScene) return;
+  exoScene.traverse(obj => {
+    if (obj.geometry) obj.geometry.dispose();
+    if (obj.material) { Array.isArray(obj.material) ? obj.material.forEach(m=>m.dispose()) : obj.material.dispose(); }
+  });
+}
+
+function initExoSystem(sys) {
+  ensureExoRenderer();
+  disposeExoScene();
+  currentExoSys = sys;
+  exoSelected = null; exoCameraFly = null;
+
+  exoScene = new THREE.Scene();
+  exoCamera.position.set(0, 22, 46);
+  exoControls.target.set(0,0,0);
+  exoScene.add(new THREE.AmbientLight(0x404060, 1.3));
+  exoScene.add(new THREE.PointLight(0xffffff, 3, 0, 0.15));
+
+  // lightweight static background starfield (no per-star shader twinkle, unlike Sol)
+  const starCount = 1200;
+  const positions = new Float32Array(starCount*3);
+  for (let i=0;i<starCount;i++) {
+    const r = 400 + Math.random()*300;
+    const theta = Math.random()*Math.PI*2, phi = Math.acos(2*Math.random()-1);
+    positions[i*3] = r*Math.sin(phi)*Math.cos(theta);
+    positions[i*3+1] = r*Math.sin(phi)*Math.sin(theta);
+    positions[i*3+2] = r*Math.cos(phi);
+  }
+  const starGeo = new THREE.BufferGeometry();
+  starGeo.setAttribute('position', new THREE.BufferAttribute(positions,3));
+  exoScene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color:0xffffff, size:1.6, transparent:true, opacity:0.7 })));
+
+  // host star
+  const starColor = sys.starColor || 0xffd27a;
+  const starRadius = sys.starRadius || 4;
+  const starMesh = new THREE.Mesh(new THREE.SphereGeometry(starRadius, 40, 40), new THREE.MeshBasicMaterial({ color: starColor }));
+  starMesh.userData = { key:'star', name: sys.name, type: sys.spectral, desc: sys.desc };
+  exoScene.add(starMesh);
+  const starGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: makeGlowTexture(), color: starColor, transparent:true, opacity:0.5, depthWrite:false }));
+  starGlow.scale.set(starRadius*6, starRadius*6, 1);
+  exoScene.add(starGlow);
+
+  exoOrbitGroup = new THREE.Group();
+  exoScene.add(exoOrbitGroup);
+  exoPlanetMeshes = [{ mesh: starMesh, pivot:null, data: starMesh.userData }];
+
+  sys.planets.forEach(p => {
+    const orbitCurve = new THREE.EllipseCurve(0,0,p.sceneOrbit,p.sceneOrbit,0,2*Math.PI,false,0);
+    const pts = orbitCurve.getPoints(96).map(pt => new THREE.Vector3(pt.x,0,pt.y));
+    const orbitLine = makeOrbitTube(pts, 0xa899ff, 0.55, 0.06);
+    exoOrbitGroup.add(orbitLine);
+
+    const pivot = new THREE.Object3D();
+    pivot.rotation.y = Math.random()*Math.PI*2;
+    exoOrbitGroup.add(pivot);
+
+    const mat = new THREE.MeshStandardMaterial({ color:p.color, roughness:0.8, emissive:p.color, emissiveIntensity:0.12 });
+    const mesh = new THREE.Mesh(new THREE.SphereGeometry(p.radius, 24, 24), mat);
+    mesh.position.x = p.sceneOrbit;
+    mesh.userData = {
+      key: p.key, name: p.name, type: p.habitable ? 'Potentially Habitable Exoplanet' : 'Exoplanet',
+      desc: p.desc, orbitAU: p.orbitAU, periodDays: p.periodDays, radius: p.radius,
+    };
+    pivot.add(mesh);
+
+    exoPlanetMeshes.push({ pivot, mesh, data: mesh.userData, orbitLine, baseOpacity:0.55, baseColor:0xa899ff, periodDays: p.periodDays });
+  });
+
+  buildExoPills(sys);
+  onExoResize();
+}
+
+function buildExoPills(sys) {
+  const starPill = `<div class="body-pill" data-key="star">★ ${sys.name}</div>`;
+  const planetPills = sys.planets.map(p => `<div class="body-pill" data-key="${p.key}">${p.name}</div>`).join('');
+  document.getElementById('exoPills').innerHTML = starPill + planetPills;
+  document.querySelectorAll('#exoPills .body-pill').forEach(el => {
+    el.addEventListener('click', () => {
+      const body = exoPlanetMeshes.find(b => b.data.key === el.dataset.key);
+      if (body) selectExoBody(body);
+    });
+  });
+}
+
+function selectExoBody(body) {
+  exoSelected = body;
+  exoPlanetMeshes.forEach(b => {
+    if (!b.orbitLine) return;
+    const isSelected = b === body;
+    b.orbitLine.material.opacity = isSelected ? 0.95 : (b.baseOpacity * 0.25);
+    b.orbitLine.material.color.set(isSelected ? 0x00F5D4 : b.baseColor);
+  });
+  const worldPos = new THREE.Vector3();
+  body.mesh.getWorldPosition(worldPos);
+  body.lastWorldPos = worldPos.clone();
+  const d = body.data;
+  const dir = new THREE.Vector3(0.55, 0.62, 1).normalize().multiplyScalar(Math.max((d.radius||4) * 9, 10));
+  exoCameraFly = {
+    fromCam: exoCamera.position.clone(), toCam: worldPos.clone().add(dir),
+    fromTarget: exoControls.target.clone(), toTarget: worldPos.clone(),
+    start: performance.now(), duration: 700,
+  };
+
+  const panel = document.getElementById('bodyDetailPanel');
+  panel.classList.add('open');
+  document.getElementById('bd-name').textContent = d.name;
+  document.getElementById('bd-type').textContent = d.type;
+  document.getElementById('bd-desc').textContent = d.desc;
+  const statsEl = document.getElementById('bd-stats');
+  if (d.key === 'star') {
+    statsEl.innerHTML = `
+      <div class="body-detail-stat"><span>Distance from Sol</span><span>${currentExoSys.distanceLy.toLocaleString()} ly</span></div>
+      <div class="body-detail-stat"><span>Known Planets Shown</span><span>${currentExoSys.planets.length}</span></div>`;
+  } else {
+    statsEl.innerHTML = `
+      <div class="body-detail-stat"><span>Orbital Period</span><span>${d.periodDays < 1 ? Math.round(d.periodDays*24)+' hours' : d.periodDays+' days'}</span></div>
+      <div class="body-detail-stat"><span>Distance from Host Star</span><span>${d.orbitAU} AU</span></div>
+      <div class="body-detail-stat"><span>Potentially Habitable</span><span>${d.type.includes('Habitable') ? 'Yes' : 'No'}</span></div>`;
+  }
+  document.querySelectorAll('#exoPills .body-pill').forEach(el => el.classList.toggle('active', el.dataset.key === d.key));
+}
+
+function deselectExoBody() {
+  exoSelected = null;
+  exoPlanetMeshes.forEach(b => { if (b.orbitLine) { b.orbitLine.material.opacity = b.baseOpacity; b.orbitLine.material.color.set(b.baseColor); } });
+  document.getElementById('bodyDetailPanel').classList.remove('open');
+  document.querySelectorAll('#exoPills .body-pill').forEach(el => el.classList.remove('active'));
+}
+
+function animateExo() {
+  requestAnimationFrame(animateExo);
+  if (!exoScene) return;
+
+  exoPlanetMeshes.forEach(({ pivot, periodDays }) => {
+    if (pivot && periodDays) { pivot.rotation.y += EXO_SPEED_K / periodDays; wrapAngle(pivot); }
+  });
+
+  if (exoCameraFly) {
+    const t = Math.min(1, (performance.now() - exoCameraFly.start) / exoCameraFly.duration);
+    const eased = easeInOutCubic(t);
+    exoCamera.position.lerpVectors(exoCameraFly.fromCam, exoCameraFly.toCam, eased);
+    exoControls.target.lerpVectors(exoCameraFly.fromTarget, exoCameraFly.toTarget, eased);
+    if (t >= 1) { exoCameraFly = null; if (exoSelected) exoSelected.mesh.getWorldPosition(exoSelected.lastWorldPos); }
+  } else if (exoSelected) {
+    const liveWorldPos = new THREE.Vector3();
+    exoSelected.mesh.getWorldPosition(liveWorldPos);
+    const delta = liveWorldPos.clone().sub(exoSelected.lastWorldPos);
+    if (delta.lengthSq() > 0) { exoCamera.position.add(delta); exoControls.target.add(delta); }
+    exoSelected.lastWorldPos.copy(liveWorldPos);
+  }
+
+  exoControls.update();
+  exoRenderer.render(exoScene, exoCamera);
+}
+
+function onExoResize() {
+  if (!exoRenderer) return;
+  const wrap = document.getElementById('exoCanvasWrap');
+  const w = wrap.clientWidth, h = wrap.clientHeight;
+  if (!w || !h) return;
+  exoCamera.aspect = w/h; exoCamera.updateProjectionMatrix();
+  exoRenderer.setSize(w,h);
 }
 
 // ══════════════════════════════════════════════════════════════════════════
