@@ -1,0 +1,38 @@
+{
+  "pulledAt": "2026-06-30T06:56:06.476Z",
+  "source": "NASA JPL Horizons (ssd.jpl.nasa.gov)",
+  "positions": {
+    "mercury": {
+      "angleDeg": -106.52652824930308,
+      "distanceAU": 0.4657905422829381
+    },
+    "venus": {
+      "angleDeg": -154.20788036378613,
+      "distanceAU": 0.7212052191006099
+    },
+    "earth": {
+      "angleDeg": -82.11796537656892,
+      "distanceAU": 1.0165544289663955
+    },
+    "mars": {
+      "angleDeg": 35.111073988173054,
+      "distanceAU": 1.4409408760211933
+    },
+    "jupiter": {
+      "angleDeg": 123.66850414288575,
+      "distanceAU": 5.275630421788767
+    },
+    "saturn": {
+      "angleDeg": 7.633363105056106,
+      "distanceAU": 9.454843651809542
+    },
+    "uranus": {
+      "angleDeg": 61.591144920387585,
+      "distanceAU": 19.457964834660725
+    },
+    "neptune": {
+      "angleDeg": 2.0852584679244472,
+      "distanceAU": 29.87185535350245
+    }
+  }
+}
