@@ -1,5 +1,5 @@
 {
-  "pulledAt": "2026-06-30T15:24:40.853Z",
+  "pulledAt": "2026-07-01T03:15:22.669Z",
   "source": "Launch Library 2 (thespacedevs.com)",
   "count": 10,
   "launches": [
@@ -16,20 +16,6 @@
       "location": "Air launch to orbit",
       "missionDesc": "Contracted by NASA under the Small Business Innovation Research Phase 3 contract, Katalyst Space Technologies' LINK servicing spacecraft will rendezvous and attach to NASA’s Neil Gehrels Swift Observatory to re-boost its",
       "imageUrl": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/pegasus_xl_moun_image_20240307124328.jpeg"
-    },
-    {
-      "id": "8b7e748c-6ed5-4681-a898-827b4a23b8d7",
-      "name": "Electron | The Grain Goddess Provides (iQPS Launch 7)",
-      "provider": "Rocket Lab",
-      "providerType": "Commercial",
-      "rocket": "Electron",
-      "net": "2026-07-01T13:00:00Z",
-      "status": "Go for Launch",
-      "statusAbbrev": "Go",
-      "pad": "Unknown Pad",
-      "location": "Rocket Lab Launch Complex 1, Mahia Peninsula, New Zealand",
-      "missionDesc": "Synthetic aperture radar Earth observation satellite for Japanese Earth imaging company iQPS.",
-      "imageUrl": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/electron_image_20190705175640.jpeg"
     },
     {
       "id": "2bedbf8c-8df2-4e24-8397-8c2a08fab581",
@@ -121,9 +107,9 @@
       "provider": "SpaceX",
       "providerType": "Commercial",
       "rocket": "Falcon 9 Block 5",
-      "net": "2026-07-07T06:51:00Z",
-      "status": "To Be Confirmed",
-      "statusAbbrev": "TBC",
+      "net": "2026-07-07T07:10:00Z",
+      "status": "Go for Launch",
+      "statusAbbrev": "Go",
       "pad": "Space Launch Complex 4E",
       "location": "Vandenberg SFB, CA, USA",
       "missionDesc": "Dedicated rideshare flight to a sun-synchronous orbit with dozens of small microsatellites and nanosatellites for commercial and government customers.",
@@ -142,6 +128,20 @@
       "location": "Cape Canaveral SFS, FL, USA",
       "missionDesc": "A batch of 29 satellites for the Starlink mega-constellation - SpaceX's project for space-based Internet communication system.",
       "imageUrl": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/falcon2520925_image_20221009234147.png"
+    },
+    {
+      "id": "1e79a5e9-c02c-470f-882f-884120100fef",
+      "name": "Long March 10B | Demo Flight",
+      "provider": "China Aerospace Science and Technology Corporation",
+      "providerType": "Government",
+      "rocket": "Long March 10B",
+      "net": "2026-07-10T05:00:00Z",
+      "status": "To Be Confirmed",
+      "statusAbbrev": "TBC",
+      "pad": "Commercial LC-2",
+      "location": "Wenchang Space Launch Site, People's Republic of China",
+      "missionDesc": "First test launch of CASC’s Long March 10B rocket.",
+      "imageUrl": null
     }
   ]
 }

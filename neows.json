@@ -1,62 +1,10 @@
 {
-  "pulledAt": "2026-06-30T13:31:21.738Z",
+  "pulledAt": "2026-07-01T03:15:20.500Z",
   "source": "NASA NeoWs (api.nasa.gov/neo)",
-  "rangeStart": "2026-06-30",
-  "rangeEnd": "2026-07-06",
+  "rangeStart": "2026-07-01",
+  "rangeEnd": "2026-07-07",
   "count": 33,
   "objects": [
-    {
-      "id": "2398188",
-      "name": "398188 Agni 2010 LE15",
-      "hazardous": true,
-      "diameterMinM": 362,
-      "diameterMaxM": 809,
-      "closeApproachDate": "2026-Jun-30 07:30",
-      "closeApproachEpochMs": 1782804600000,
-      "velocityKmS": "7.79",
-      "missDistanceKm": 28611807,
-      "missDistanceLunar": "74.40",
-      "jplUrl": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=2398188"
-    },
-    {
-      "id": "3989284",
-      "name": "2020 BW12",
-      "hazardous": false,
-      "diameterMinM": 16,
-      "diameterMaxM": 36,
-      "closeApproachDate": "2026-Jun-30 12:35",
-      "closeApproachEpochMs": 1782822900000,
-      "velocityKmS": "15.83",
-      "missDistanceKm": 58968945,
-      "missDistanceLunar": "153.34",
-      "jplUrl": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=3989284"
-    },
-    {
-      "id": "3799876",
-      "name": "2018 ES3",
-      "hazardous": false,
-      "diameterMinM": 31,
-      "diameterMaxM": 70,
-      "closeApproachDate": "2026-Jun-30 13:12",
-      "closeApproachEpochMs": 1782825120000,
-      "velocityKmS": "8.84",
-      "missDistanceKm": 49994491,
-      "missDistanceLunar": "130.00",
-      "jplUrl": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=3799876"
-    },
-    {
-      "id": "3739621",
-      "name": "2016 AR130",
-      "hazardous": false,
-      "diameterMinM": 217,
-      "diameterMaxM": 485,
-      "closeApproachDate": "2026-Jun-30 15:06",
-      "closeApproachEpochMs": 1782831960000,
-      "velocityKmS": "36.08",
-      "missDistanceKm": 54117549,
-      "missDistanceLunar": "140.72",
-      "jplUrl": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=3739621"
-    },
     {
       "id": "3147315",
       "name": "2003 BN4",
@@ -433,6 +381,58 @@
       "missDistanceKm": 59230704,
       "missDistanceLunar": "154.02",
       "jplUrl": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=2663491"
+    },
+    {
+      "id": "2240320",
+      "name": "240320 2003 HS42",
+      "hazardous": false,
+      "diameterMinM": 234,
+      "diameterMaxM": 522,
+      "closeApproachDate": "2026-Jul-07 04:28",
+      "closeApproachEpochMs": 1783398480000,
+      "velocityKmS": "4.26",
+      "missDistanceKm": 73103547,
+      "missDistanceLunar": "190.09",
+      "jplUrl": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=2240320"
+    },
+    {
+      "id": "3710914",
+      "name": "2015 DC1",
+      "hazardous": false,
+      "diameterMinM": 29,
+      "diameterMaxM": 65,
+      "closeApproachDate": "2026-Jul-07 12:45",
+      "closeApproachEpochMs": 1783428300000,
+      "velocityKmS": "5.29",
+      "missDistanceKm": 42457614,
+      "missDistanceLunar": "110.40",
+      "jplUrl": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=3710914"
+    },
+    {
+      "id": "3765610",
+      "name": "2016 XR1",
+      "hazardous": false,
+      "diameterMinM": 38,
+      "diameterMaxM": 85,
+      "closeApproachDate": "2026-Jul-07 16:58",
+      "closeApproachEpochMs": 1783443480000,
+      "velocityKmS": "10.36",
+      "missDistanceKm": 38966151,
+      "missDistanceLunar": "101.32",
+      "jplUrl": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=3765610"
+    },
+    {
+      "id": "3720898",
+      "name": "2015 KG158",
+      "hazardous": false,
+      "diameterMinM": 6,
+      "diameterMaxM": 13,
+      "closeApproachDate": "2026-Jul-07 21:45",
+      "closeApproachEpochMs": 1783460700000,
+      "velocityKmS": "6.60",
+      "missDistanceKm": 51455374,
+      "missDistanceLunar": "133.80",
+      "jplUrl": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=3720898"
     }
   ]
 }
