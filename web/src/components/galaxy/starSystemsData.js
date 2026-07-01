@@ -1,0 +1,141 @@
+const TEX = 'https://cdn.jsdelivr.net/gh/N3rson/Solar-System-3D@main/src/images/';
+
+export const PLANETS = [
+  { key:'mercury', name:'Mercury', type:'Terrestrial Planet', color:0x9c9c9c, texture: TEX+'mercurymap.jpg', radius:0.38, orbit:14, period:0.24, spinDays:58.6,
+    desc:'The smallest, fastest planet — a scorched, cratered world baked by the closest orbit to the Sun.' },
+  { key:'venus', name:'Venus', type:'Terrestrial Planet', color:0xe8c27a, texture: TEX+'venusmap.jpg', radius:0.6, orbit:19, period:0.62, spinDays:-243,
+    desc:"Earth's twin in size, but a runaway greenhouse hell under crushing CO₂ skies — and it spins backwards." },
+  { key:'earth', name:'Earth', type:'Terrestrial Planet', color:0x4d96ff, texture: TEX+'earth_daymap.jpg', radius:0.64, orbit:25, period:1, spinDays:1,
+    desc:'Home. The only known world with liquid oceans, breathable air, and life.' },
+  { key:'mars', name:'Mars', type:'Terrestrial Planet', color:0xd1542e, texture: TEX+'marsmap.jpg', radius:0.5, orbit:32, period:1.88, spinDays:1.03,
+    desc:'The Red Planet — iron oxide dust, polar ice, and the tallest volcano in the solar system.' },
+  { key:'jupiter', name:'Jupiter', type:'Gas Giant', color:0xd9a06b, texture: TEX+'jupiter.jpg', radius:2.2, orbit:48, period:11.86, spinDays:0.41,
+    desc:'The largest planet — a churning hydrogen giant with a storm bigger than Earth. Spins so fast its day is under 10 hours.' },
+  { key:'saturn', name:'Saturn', type:'Gas Giant', color:0xead6a8, texture: TEX+'saturnmap.jpg', radius:1.9, orbit:66, period:29.46, spinDays:0.45, hasRing:true,
+    desc:"Famed for its dazzling ice-and-rock ring system — low density enough to float in water." },
+  { key:'uranus', name:'Uranus', type:'Ice Giant', color:0x9fe3e3, texture: TEX+'uranus.jpg', radius:1.3, orbit:82, period:84.01, spinDays:-0.72,
+    desc:'Tipped almost completely on its side, rolling around the Sun like a ball — and also spins backwards.' },
+  { key:'neptune', name:'Neptune', type:'Ice Giant', color:0x4169e1, texture: TEX+'neptune.jpg', radius:1.25, orbit:96, period:164.8, spinDays:0.67,
+    desc:'The windiest world known — supersonic methane storms at the dark edge of the system.' },
+];
+
+export const MOONS = {
+  earth: [
+    { key:'moon', name:'The Moon', type:'Natural Satellite', color:0xcfcfcf, texture: TEX+'moonmap.jpg', radius:0.17, orbit:1.7, periodDays:27.3,
+      desc:"Earth's only natural satellite — formed ~4.5 billion years ago, likely from a giant impact." },
+    { key:'iss', name:'ISS', type:'Artificial Satellite (symbolic)', color:0xffffff, radius:0.06, orbit:0.95, periodDays:0.065,
+      desc:'The International Space Station orbits Earth roughly every 92 minutes — shown here symbolically, not to scale.' },
+  ],
+  mars: [
+    { key:'phobos', name:'Phobos', type:'Natural Satellite', color:0x9c8a7a, radius:0.07, orbit:0.85, periodDays:0.32,
+      desc:"The larger, closer of Mars' two moons — a lumpy captured asteroid slowly spiraling inward." },
+    { key:'deimos', name:'Deimos', type:'Natural Satellite', color:0xada094, radius:0.05, orbit:1.25, periodDays:1.26,
+      desc:'The smaller, more distant Martian moon — likely another captured asteroid.' },
+  ],
+  jupiter: [
+    { key:'io', name:'Io', type:'Galilean Moon', color:0xe9d18a, radius:0.22, orbit:3.0, periodDays:1.77,
+      desc:"The most volcanically active body in the solar system, wracked by Jupiter's tidal forces." },
+    { key:'europa', name:'Europa', type:'Galilean Moon', color:0xd8c9b0, radius:0.19, orbit:3.8, periodDays:3.55,
+      desc:'An ice-shelled moon hiding a global ocean — one of the best bets for life beyond Earth.' },
+    { key:'ganymede', name:'Ganymede', type:'Galilean Moon', color:0xa89a86, radius:0.27, orbit:4.7, periodDays:7.15,
+      desc:'The largest moon in the solar system — bigger than the planet Mercury.' },
+    { key:'callisto', name:'Callisto', type:'Galilean Moon', color:0x8a8076, radius:0.25, orbit:5.6, periodDays:16.7,
+      desc:"Jupiter's heavily cratered outermost large moon, among the oldest surfaces in the solar system." },
+  ],
+  saturn: [
+    { key:'titan', name:'Titan', type:'Major Moon', color:0xe0b659, radius:0.26, orbit:4.2, periodDays:15.9,
+      desc:"Saturn's largest moon — the only moon with a dense atmosphere and liquid methane lakes." },
+    { key:'rhea', name:'Rhea', type:'Major Moon', color:0xc9c2b8, radius:0.14, orbit:3.2, periodDays:4.5,
+      desc:"Saturn's second-largest moon, a heavily cratered icy world." },
+    { key:'enceladus', name:'Enceladus', type:'Major Moon', color:0xeaf2f5, radius:0.09, orbit:2.5, periodDays:1.37,
+      desc:'A small icy moon erupting water-ice geysers from a hidden subsurface ocean.' },
+  ],
+  uranus: [
+    { key:'titania', name:'Titania', type:'Major Moon', color:0xb0aab5, radius:0.15, orbit:3.0, periodDays:8.7,
+      desc:"Uranus' largest moon, an icy-rocky world with canyons larger than Earth's Grand Canyon." },
+    { key:'oberon', name:'Oberon', type:'Major Moon', color:0xa49e9c, radius:0.14, orbit:3.8, periodDays:13.5,
+      desc:"Uranus' second-largest and outermost major moon." },
+  ],
+  neptune: [
+    { key:'triton', name:'Triton', type:'Major Moon', color:0xcfd8da, radius:0.2, orbit:2.8, periodDays:5.88,
+      desc:'A captured Kuiper Belt object orbiting backwards — geologically active with nitrogen-ice geysers.' },
+  ],
+};
+
+export const COMETS = [
+  { key:'halley', name:"Halley's Comet", designation:'1P/Halley', a:17.8, e:0.967, period:75.32,
+    epoch:'1986-02-09', sceneA:140, omega:30, color:0xbfe9ff,
+    desc:'The most famous periodic comet, visible to the naked eye every ~76 years. Last seen 1986, returns 2061.' },
+  { key:'encke', name:'Comet Encke', designation:'2P/Encke', a:2.22, e:0.848, period:3.30,
+    epoch:'2023-10-22', sceneA:55, omega:160, color:0xffd9a0,
+    desc:'The shortest known orbital period of any comet at 3.3 years — observed on more returns than any other.' },
+  { key:'67p', name:'67P/Churyumov–Gerasimenko', designation:'67P', a:3.46, e:0.641, period:6.44,
+    epoch:'2021-11-02', sceneA:80, omega:280, color:0xc7ffb0,
+    desc:"Target of ESA's Rosetta mission (2014–2016) — the first spacecraft to orbit and land on a comet." },
+  { key:'neowise', name:'Comet NEOWISE', designation:'C/2020 F3', a:358, e:0.999, period:6800,
+    epoch:'2020-07-03', sceneA:200, omega:90, color:0xffb0d9,
+    desc:"A long-period comet that dazzled naked-eye observers in 2020. Won't return for roughly 6,800 years." },
+];
+
+export const GALAXY_REGIONS = [
+  { key:'core', name:'Galactic Core', type:'Sagittarius A* · Supermassive Black Hole', rNorm:0.04, labelAngle:-2.35,
+    desc:'A 4-million-solar-mass black hole anchors the center of the Milky Way, ~26,000 light-years from Earth.' },
+  { key:'bar', name:'Central Bar', type:'Stellar Bar', rNorm:0.16, labelAngle:-1.75,
+    desc:'A dense bar of older stars stretches across the galactic center, funneling gas inward and shaping the spiral arms.' },
+  { key:'orion-arm', name:'Orion Arm', type:'Minor Spiral Arm — You Are Here', rNorm:0.42, labelAngle:-1.15,
+    desc:'A minor spiral arm (also called the Local Arm) between the larger Sagittarius and Perseus arms — home to the Sun and Earth.' },
+  { key:'perseus-arm', name:'Perseus Arm', type:'Major Spiral Arm', rNorm:0.62, labelAngle:-0.55,
+    desc:"One of the Milky Way's prominent spiral arms, rich in young star-forming regions and nebulae." },
+  { key:'halo', name:'Galactic Halo', type:'Globular Cluster Halo', rNorm:0.92, labelAngle:0.05,
+    desc:'A sparse, roughly spherical region of old stars and globular clusters surrounding the entire galactic disk.' },
+];
+
+export const STAR_SYSTEMS = [
+  { key:'sol', name:'Sol', isSol:true, rNorm:0.42, angle:0, distanceLy:0, spectral:'G2V Yellow Dwarf',
+    desc:'Our home star and the only system confirmed to host life — 8 planets, dozens of moons, countless comets and asteroids.' },
+  { key:'alpha-centauri', name:'Alpha Centauri', rNorm:0.40, angle:-0.55, distanceLy:4.37,
+    spectral:'G2V + K1V binary, + Proxima Centauri (M5.5Ve red dwarf)',
+    markerColor:'200,220,255', starColor:0xfff0c8, starRadius:3.6,
+    desc:"The nearest star system to the Sun — a triple system. Proxima b, a roughly Earth-sized planet, was found in Proxima Centauri's habitable zone in 2016.",
+    planets:[
+      { key:'proxima-b', name:'Proxima b', radius:0.62, sceneOrbit:9, orbitAU:0.0485, periodDays:11.2, color:0x6fae6f,
+        desc:"An Earth-sized rocky planet in Proxima Centauri's habitable zone — the closest known exoplanet to our Sun." },
+    ]},
+  { key:'51-pegasi', name:'51 Pegasi', rNorm:0.50, angle:0.35, distanceLy:51,
+    spectral:'G2IV-V Sun-like Star',
+    markerColor:'255,235,190', starColor:0xfff2c0, starRadius:4.4,
+    desc:'A Sun-like star where the first exoplanet around a Sun-like star was discovered (1995) — work that won the 2019 Nobel Prize in Physics.',
+    planets:[
+      { key:'51-peg-b', name:'51 Pegasi b "Dimidium"', radius:1.9, sceneOrbit:9, orbitAU:0.0527, periodDays:4.23, color:0xd9a06b,
+        desc:"The first exoplanet ever discovered orbiting a Sun-like star (1995) — a scorching 'hot Jupiter' that completes an orbit in just over 4 days." },
+    ]},
+  { key:'trappist-1', name:'TRAPPIST-1', rNorm:0.46, angle:1.05, distanceLy:40,
+    spectral:'M8V Ultra-Cool Red Dwarf',
+    markerColor:'255,170,150', starColor:0xff8a6e, starRadius:2.2,
+    desc:'An ultra-cool red dwarf with 7 roughly Earth-sized planets — 3 sit in the habitable zone. Discovered via the Spitzer Space Telescope in 2017.',
+    planets:[
+      { key:'trappist-b', name:'TRAPPIST-1b', radius:0.59, sceneOrbit:7, orbitAU:0.0115, periodDays:1.51, color:0xb08c7a, desc:'Innermost of the seven — too hot for liquid water.' },
+      { key:'trappist-c', name:'TRAPPIST-1c', radius:0.58, sceneOrbit:9, orbitAU:0.0158, periodDays:2.42, color:0xc89c84, desc:'Likely rocky with a thick, Venus-like atmosphere.' },
+      { key:'trappist-d', name:'TRAPPIST-1d', radius:0.41, sceneOrbit:11, orbitAU:0.0223, periodDays:4.05, color:0x9fcf9f, desc:'Smallest of the seven — sits on the inner edge of the habitable zone.', habitable:true },
+      { key:'trappist-e', name:'TRAPPIST-1e', radius:0.56, sceneOrbit:13.5, orbitAU:0.0293, periodDays:6.10, color:0x6fae6f, desc:'Widely considered the most Earth-like of the seven — squarely in the habitable zone.', habitable:true },
+      { key:'trappist-f', name:'TRAPPIST-1f', radius:0.62, sceneOrbit:16.5, orbitAU:0.0385, periodDays:9.21, color:0x7fb8c9, desc:'Habitable-zone candidate, possibly water-ice rich.', habitable:true },
+      { key:'trappist-g', name:'TRAPPIST-1g', radius:0.66, sceneOrbit:19.5, orbitAU:0.0469, periodDays:12.35, color:0x6fa0c9, desc:'Outer habitable-zone planet, slightly larger than Earth.', habitable:true },
+      { key:'trappist-h', name:'TRAPPIST-1h', radius:0.34, sceneOrbit:23, orbitAU:0.0619, periodDays:18.77, color:0xb0c9d9, desc:'Coldest and outermost confirmed planet — likely an ice world.' },
+    ]},
+  { key:'kepler-186', name:'Kepler-186', rNorm:0.68, angle:-1.3, distanceLy:582,
+    spectral:'M1V Red Dwarf',
+    markerColor:'255,180,160', starColor:0xff9a78, starRadius:2.6,
+    desc:"A faint red dwarf hosting Kepler-186f — the first Earth-sized planet ever found within another star's habitable zone (2014).",
+    planets:[
+      { key:'kepler-186f', name:'Kepler-186f', radius:0.68, sceneOrbit:13, orbitAU:0.432, periodDays:130, color:0x6fae6f,
+        desc:"The first Earth-sized planet discovered within another star's habitable zone.", habitable:true },
+    ]},
+  { key:'hd-209458', name:'HD 209458', rNorm:0.33, angle:-2.05, distanceLy:159,
+    spectral:'G0V Sun-like Star',
+    markerColor:'255,244,225', starColor:0xfff5d8, starRadius:4.6,
+    desc:'Home to "Osiris" — the first exoplanet ever observed transiting its star (1999), and the first found with a detectable atmosphere.',
+    planets:[
+      { key:'osiris', name:'Osiris (HD 209458 b)', radius:1.9, sceneOrbit:9, orbitAU:0.047, periodDays:3.52, color:0xd9a06b,
+        desc:'The first transiting exoplanet ever detected (1999) — a puffy "hot Jupiter" actively losing its atmosphere to space.' },
+    ]},
+];

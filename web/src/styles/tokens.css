@@ -1,0 +1,33 @@
+/* Design tokens — ported verbatim from the static dashboard's index.html
+   :root block, so the React rebuild keeps the exact same palette/typography. */
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Outfit:wght@300;400;500;600;700;900&family=Sora:wght@400;600;700;800&display=swap');
+
+:root {
+  --void: #050508;
+  --void-soft: #08081a;
+  --deep: #0a0a1a;
+  --surface: #0c0c1e;
+  --card: #111128;
+  --card-hi: #16162f;
+  --border: rgba(150,120,230,0.14);
+  --border-bright: rgba(150,120,230,0.55);
+  --edge: rgba(255,255,255,0.055);
+  --nebula: #7B2FBE;
+  --nebula-light: #A878E8;
+  --cosmic: #3461E8;
+  --aurora: #00F0D0;
+  --aurora-soft: rgba(0,240,208,0.14);
+  --gold: #FFC83D;
+  --star: #EFEFFC;
+  --muted: #76769C;
+  --muted-2: #4C4C6E;
+  --danger: #FF4D70;
+  --success: #00F0D0;
+  --mono: 'Space Mono', monospace;
+  --sans: 'Outfit', sans-serif;
+  --display: 'Sora', 'Outfit', sans-serif;
+  --r-xs: 5px; --r-sm: 8px; --r-md: 12px; --r-lg: 18px;
+  --ease: cubic-bezier(.16,.8,.24,1);
+  --shadow-card: 0 1px 0 0 var(--edge) inset, 0 24px 48px -28px rgba(0,0,0,0.65);
+  --shadow-card-hover: 0 1px 0 0 var(--edge) inset, 0 30px 60px -24px rgba(0,0,0,0.75), 0 0 0 1px var(--border-bright);
+}

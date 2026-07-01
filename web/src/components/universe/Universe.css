@@ -1,0 +1,199 @@
+/* ── UNIVERSE SECTION ────────────────────────────────────────────────────────── */
+.universe-section {
+  position: relative;
+  min-height: 90dvh;
+  display: flex;
+  flex-direction: column;
+  padding: 48px 0 0;
+}
+
+.universe-header {
+  text-align: center;
+  padding: 0 32px 20px;
+  flex-shrink: 0;
+}
+
+.universe-eyebrow {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: var(--nebula-light);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.universe-title {
+  font-family: var(--display);
+  font-size: clamp(20px, 2.8vw, 34px);
+  font-weight: 800;
+  color: var(--star);
+  margin-bottom: 8px;
+}
+
+.universe-sub {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--muted);
+  letter-spacing: 1px;
+}
+
+/* ── STAGE ────────────────────────────────────────────────────────────────────── */
+.universe-stage {
+  flex: 1;
+  min-height: 420px;
+  position: relative;
+}
+
+.universe-stage > canvas {
+  width: 100% !important;
+  height: 100% !important;
+  position: absolute;
+  inset: 0;
+}
+
+.universe-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+/* ── TOOLTIP (Html from drei) ─────────────────────────────────────────────────── */
+.universe-tooltip {
+  background: rgba(5, 5, 20, 0.92);
+  border: 1px solid var(--border-bright);
+  border-radius: var(--r-md);
+  padding: 10px 14px;
+  max-width: 200px;
+  pointer-events: none;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.6);
+}
+
+.universe-tooltip-name {
+  font-family: var(--display);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--nebula-light);
+  margin-bottom: 2px;
+}
+
+.universe-tooltip-type {
+  font-family: var(--mono);
+  font-size: 8.5px;
+  color: var(--muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.universe-tooltip-desc {
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--star);
+  opacity: 0.85;
+  margin: 0;
+}
+
+/* ── SCALE PILLS ──────────────────────────────────────────────────────────────── */
+.universe-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 14px 24px;
+  justify-content: center;
+  background: rgba(5, 5, 20, 0.6);
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.universe-pill {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 1px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04);
+  color: var(--muted);
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s, color 0.18s;
+}
+.universe-pill:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: var(--pill-color, var(--border-bright));
+  color: var(--star);
+}
+.universe-pill.active {
+  border-color: var(--pill-color, var(--aurora));
+  color: var(--pill-color, var(--aurora));
+  background: rgba(255,255,255,0.06);
+}
+
+/* ── SELECTED DETAIL CARD ─────────────────────────────────────────────────────── */
+.universe-detail {
+  margin: 12px 24px 20px;
+  padding: 14px 18px;
+  background: linear-gradient(165deg, var(--card-hi), var(--card) 65%);
+  border: 1px solid var(--border-bright);
+  border-radius: var(--r-lg);
+  position: relative;
+  max-width: 520px;
+  align-self: center;
+}
+
+.universe-detail-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.05);
+  color: var(--muted);
+  font-size: 11px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.universe-detail-close:hover { background: rgba(255,255,255,0.1); color: var(--star); }
+
+.universe-detail-name {
+  font-family: var(--display);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--nebula-light);
+  margin-bottom: 3px;
+}
+
+.universe-detail-type {
+  font-family: var(--mono);
+  font-size: 8.5px;
+  color: var(--muted);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.universe-detail-desc {
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: var(--star);
+  opacity: 0.85;
+  margin: 0;
+}
+
+@media (max-width: 600px) {
+  .universe-header { padding: 0 16px 16px; }
+  .universe-pills { padding: 10px 14px; }
+  .universe-detail { margin: 10px 14px 16px; }
+}

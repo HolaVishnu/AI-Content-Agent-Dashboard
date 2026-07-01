@@ -1,0 +1,22 @@
+#cursor-glow {
+  position: fixed;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid var(--aurora);
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  transition: width 0.2s var(--ease), height 0.2s var(--ease), border-color 0.2s, background 0.2s;
+  mix-blend-mode: screen;
+  will-change: left, top;
+}
+#cursor-glow.hover {
+  width: 44px;
+  height: 44px;
+  background: rgba(0, 240, 208, 0.1);
+  border-color: var(--gold);
+}
+@media (hover: none) {
+  #cursor-glow { display: none; }
+}
