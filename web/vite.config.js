@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
+  base: '/AI-Content-Agent-Dashboard/',
   build: {
     // Three.js + R3F + Framer Motion together exceed 500 kB — expected for this app
     chunkSizeWarningLimit: 1600,

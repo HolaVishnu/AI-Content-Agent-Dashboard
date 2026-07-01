@@ -1,5 +1,5 @@
 import { Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import { Navbar } from './components/layout/Navbar';
 import { Footer } from './components/layout/Footer';
@@ -56,8 +56,8 @@ export default function App() {
   const { data, status } = useDashboardData();
 
   return (
-    <BrowserRouter>
+    <HashRouter>
       <AppShell data={data} status={status} />
-    </BrowserRouter>
+    </HashRouter>
   );
 }
