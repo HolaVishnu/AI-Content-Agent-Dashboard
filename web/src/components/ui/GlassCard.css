@@ -1,0 +1,28 @@
+.glass-card {
+  background: linear-gradient(135deg, var(--card-hi), var(--card));
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-card);
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+  transform-style: preserve-3d;
+  will-change: transform;
+  transition: box-shadow 0.3s var(--ease);
+}
+
+.glass-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.glass-card:hover {
+  box-shadow: var(--shadow-card-hover);
+}
+
+/* Dynamic shadow follows tilt — JS injects --shadow-x/--shadow-y via inline style */
+.glass-card .card-inner { transform: translateZ(8px); }

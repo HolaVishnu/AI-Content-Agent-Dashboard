@@ -1,0 +1,105 @@
+.site-footer {
+  position: relative;
+  overflow: hidden;
+  border-top: 1px solid var(--border);
+  background: linear-gradient(180deg, transparent, rgba(5, 5, 8, 0.96));
+  padding: 72px 48px 44px;
+  z-index: 10;
+}
+
+.footer-glow {
+  position: absolute;
+  bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 700px; height: 340px;
+  background: radial-gradient(ellipse at center bottom, rgba(0, 240, 208, 0.07), rgba(123, 47, 190, 0.04) 50%, transparent 72%);
+  pointer-events: none;
+}
+
+.footer-floaters {
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.footer-floater {
+  position: absolute;
+  bottom: 56px;
+  font-size: 22px;
+  opacity: 0.22;
+  filter: drop-shadow(0 0 8px rgba(0, 240, 208, 0.4));
+}
+
+.footer-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  text-align: center;
+}
+
+.footer-brand { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+
+.footer-logo {
+  font-family: var(--display);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--star);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  text-shadow: 0 0 24px rgba(0, 240, 208, 0.28);
+}
+
+.footer-tagline {
+  font-family: var(--sans);
+  font-size: 13.5px;
+  color: var(--muted);
+  font-weight: 400;
+  letter-spacing: 0.3px;
+}
+
+.footer-links {
+  display: flex;
+  gap: 36px;
+  align-items: center;
+}
+
+.footer-link {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 2.2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  transition: color 0.2s var(--ease), text-shadow 0.2s var(--ease);
+}
+
+.footer-link:hover {
+  color: var(--aurora);
+  text-shadow: 0 0 10px rgba(0, 240, 208, 0.4);
+}
+
+.footer-divider {
+  width: 1px; height: 14px;
+  background: var(--border);
+}
+
+.footer-copy {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--muted);
+  opacity: 0.5;
+  letter-spacing: 1.4px;
+}
+
+@media (max-width: 640px) {
+  .site-footer { padding: 56px 24px 36px; }
+  .footer-links { gap: 20px; flex-wrap: wrap; justify-content: center; }
+  .footer-floater { font-size: 16px; opacity: 0.15; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .footer-floater { animation: none !important; }
+}

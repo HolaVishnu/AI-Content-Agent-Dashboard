@@ -1,0 +1,207 @@
+/* ── DASHBOARD VIEW ────────────────────────────────────────────────────────── */
+.dashboard-view {
+  min-height: calc(100dvh - 64px);
+  padding-bottom: 80px;
+}
+
+/* ── TELEMETRY STRIP ─────────────────────────────────────────────────────── */
+.telemetry-strip {
+  background: linear-gradient(180deg, rgba(16,16,36,0.78), rgba(12,12,28,0.7));
+  border-bottom: 1px solid var(--border);
+  padding: 14px 32px;
+  display: flex;
+  align-items: center;
+  overflow-x: auto;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 1px 0 0 var(--edge) inset;
+}
+
+.telem-item {
+  display: flex; flex-direction: column; gap: 3px;
+  padding: 0 28px;
+  border-right: 1px solid var(--border);
+  flex-shrink: 0;
+  position: relative;
+}
+.telem-item::before {
+  content: ''; position: absolute; left: 0; top: 2px; bottom: 2px;
+  width: 2px; border-radius: 2px;
+  background: linear-gradient(var(--aurora), transparent); opacity: 0.6;
+}
+.telem-item:first-child { padding-left: 0; }
+.telem-item:first-child::before { display: none; }
+.telem-item:last-child { border-right: none; }
+.telem-label  { font-family: var(--mono); font-size: 8.5px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; }
+.telem-value  { font-family: var(--mono); font-size: 21px; font-weight: 700; color: var(--aurora); line-height: 1; font-variant-numeric: tabular-nums; text-shadow: 0 0 16px rgba(0,240,208,0.25); }
+.telem-value.gold   { color: var(--gold); text-shadow: 0 0 16px rgba(255,200,61,0.25); }
+.telem-value.white  { color: var(--star); text-shadow: none; }
+.telem-value.muted  { color: var(--muted); font-size: 14px; font-weight: 400; text-shadow: none; }
+.telem-sub    { font-family: var(--mono); font-size: 8.5px; color: var(--muted-2); letter-spacing: 0.5px; }
+
+/* ── MAIN CONTENT AREA ───────────────────────────────────────────────────── */
+.dashboard-main {
+  padding: 28px 32px;
+  max-width: 1500px;
+  margin: 0 auto;
+}
+
+.section-label {
+  font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 3px;
+  color: var(--nebula-light); text-transform: uppercase; margin-bottom: 16px;
+  display: flex; align-items: center; gap: 12px;
+}
+.section-label::before { content: '◈'; color: var(--aurora); font-size: 11px; }
+.section-label::after  { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--border-bright), transparent); }
+
+/* ── AGENTS GRID ─────────────────────────────────────────────────────────── */
+.agents-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-bottom: 30px;
+}
+@media (max-width: 1200px) { .agents-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 768px)  { .agents-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 480px)  { .agents-grid { grid-template-columns: 1fr; } }
+
+/* Agent card color accent — top border stripe per agent type */
+.agent-card { cursor: default; }
+.agent-card::before {
+  content: ''; position: absolute; top: 0; left: 16px; right: 16px;
+  height: 1.5px; border-radius: 2px; opacity: 0.85;
+}
+.agent-ideator::before { background: linear-gradient(90deg, transparent, #9B4FDE, transparent); }
+.agent-hook::before    { background: linear-gradient(90deg, transparent, #FF4466, transparent); }
+.agent-planner::before { background: linear-gradient(90deg, transparent, #00F0D0, transparent); }
+.agent-analyst::before { background: linear-gradient(90deg, transparent, #FFC83D, transparent); }
+.agent-dm::before      { background: linear-gradient(90deg, transparent, #5C8CFF, transparent); }
+
+.agent-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; }
+.agent-icon {
+  width: 38px; height: 38px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-size: 17px;
+  flex-shrink: 0; border: 1px solid;
+}
+.agent-ideator .agent-icon { background: radial-gradient(circle, rgba(123,47,190,0.28), transparent 75%); border-color: rgba(168,120,232,0.4); }
+.agent-hook    .agent-icon { background: radial-gradient(circle, rgba(255,68,102,0.28), transparent 75%); border-color: rgba(255,77,112,0.4); }
+.agent-planner .agent-icon { background: radial-gradient(circle, rgba(0,240,208,0.22), transparent 75%); border-color: rgba(0,240,208,0.4); }
+.agent-analyst .agent-icon { background: radial-gradient(circle, rgba(255,200,61,0.22), transparent 75%); border-color: rgba(255,200,61,0.4); }
+.agent-dm      .agent-icon { background: radial-gradient(circle, rgba(52,97,232,0.28), transparent 75%); border-color: rgba(92,140,255,0.4); }
+
+.agent-id   { font-family: var(--mono); font-size: 9px; letter-spacing: 2px; color: var(--muted); }
+.agent-meta { margin-bottom: 12px; }
+.agent-name { font-family: var(--display); font-size: 13.5px; font-weight: 700; letter-spacing: 0.2px; margin-bottom: 2px; }
+.agent-role { font-size: 10px; color: var(--muted); line-height: 1.4; }
+.agent-online {
+  display: flex; align-items: center; gap: 4px; margin-top: 6px;
+  font-family: var(--mono); font-size: 9px; color: var(--aurora); letter-spacing: 1px;
+}
+.online-dot { width: 5px; height: 5px; background: var(--aurora); border-radius: 50%; animation: pulse-glow 2s infinite; }
+@keyframes pulse-glow { 0%,100% { opacity: 1; box-shadow: 0 0 6px var(--aurora); } 50% { opacity: 0.3; box-shadow: none; } }
+
+.agent-outputs { display: flex; flex-direction: column; gap: 8px; transition: opacity 0.3s; }
+.agent-outputs.dimmed { opacity: 0.35; }
+
+.output-item { background: rgba(255,255,255,0.025); border-radius: var(--r-sm); padding: 9px 10px; border-left: 2px solid; transition: background 0.2s; }
+.output-item:hover { background: rgba(255,255,255,0.05); }
+.agent-ideator .output-item { border-color: #7B2FBE; }
+.agent-hook    .output-item { border-color: #FF4466; }
+.agent-planner .output-item { border-color: #00F0D0; }
+.agent-analyst .output-item { border-color: #FFC83D; }
+.agent-dm      .output-item { border-color: #3461E8; }
+.output-label { font-family: var(--mono); font-size: 8px; letter-spacing: 1.5px; color: var(--muted); text-transform: uppercase; margin-bottom: 3px; }
+.output-text  { font-size: 11px; line-height: 1.5; color: var(--star); }
+
+/* Agent uplink button — re-uses MagneticButton but with per-agent color accent via CSS */
+.agent-uplink-btn { width: 100%; margin-top: 12px; justify-content: center; }
+.agent-ideator .agent-uplink-btn { border-color: rgba(123,47,190,0.5);  color: #B585EE; background: rgba(123,47,190,0.06); }
+.agent-hook    .agent-uplink-btn { border-color: rgba(255,68,102,0.5);  color: #FF6B85; background: rgba(255,68,102,0.06); }
+.agent-planner .agent-uplink-btn { border-color: rgba(0,240,208,0.5);   color: var(--aurora); }
+.agent-analyst .agent-uplink-btn { border-color: rgba(255,200,61,0.5);  color: var(--gold); background: rgba(255,200,61,0.06); }
+.agent-dm      .agent-uplink-btn { border-color: rgba(52,97,232,0.5);   color: #6F9BFF; background: rgba(52,97,232,0.06); }
+
+.agent-ts { font-family: var(--mono); font-size: 9px; color: var(--muted); text-align: center; margin-top: 5px; min-height: 13px; }
+
+/* ── BOTTOM GRID ──────────────────────────────────────────────────────────── */
+.bottom-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 30px;
+}
+@media (max-width: 1100px) { .bottom-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 700px)  { .bottom-grid { grid-template-columns: 1fr; } }
+
+.live-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 30px;
+}
+@media (max-width: 700px) { .live-grid { grid-template-columns: 1fr; } }
+
+/* ── SHARED PANEL ELEMENTS ───────────────────────────────────────────────── */
+.panel-title {
+  font-family: var(--mono); font-size: 9px; letter-spacing: 2.5px;
+  color: var(--nebula-light); text-transform: uppercase;
+  margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border);
+}
+.panel-empty { font-family: var(--mono); font-size: 10px; color: var(--muted); padding: 10px 0; }
+
+/* Posts */
+.post-list { display: flex; flex-direction: column; gap: 8px; }
+.post-item { display: flex; gap: 10px; align-items: flex-start; padding: 10px; background: rgba(255,255,255,0.02); border-radius: var(--r-sm); border: 1px solid var(--border); transition: border-color 0.2s, transform 0.2s var(--ease); }
+.post-item:hover { border-color: var(--border-bright); transform: translateX(2px); }
+.post-rank  { font-family: var(--mono); font-size: 11px; color: var(--nebula-light); font-weight: 700; flex-shrink: 0; width: 20px; }
+.post-badge { font-size: 14px; flex-shrink: 0; }
+.post-body  { flex: 1; min-width: 0; }
+.post-caption { font-size: 11px; line-height: 1.5; color: var(--star); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 5px; }
+.post-stats { display: flex; gap: 10px; font-family: var(--mono); font-size: 9px; color: var(--muted); }
+.post-stat  { display: flex; align-items: center; gap: 3px; }
+
+/* Competitors */
+.comp-list { display: flex; flex-direction: column; gap: 6px; }
+.comp-item { display: flex; flex-direction: column; gap: 4px; padding: 10px; background: rgba(255,255,255,0.02); border-radius: var(--r-sm); border: 1px solid var(--border); }
+.comp-item.you { border-color: rgba(0,240,208,0.3); background: rgba(0,240,208,0.05); }
+.comp-row   { display: flex; justify-content: space-between; align-items: center; }
+.comp-handle     { font-family: var(--mono); font-size: 11px; color: var(--star); font-weight: 700; }
+.comp-handle.you-handle { color: var(--aurora); }
+.comp-followers  { font-family: var(--mono); font-size: 11px; font-weight: 700; color: var(--nebula-light); }
+.comp-bar-bg     { height: 3px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden; }
+.comp-bar-fill   { height: 100%; border-radius: 2px; transition: width 0.8s var(--ease); }
+.comp-eng        { font-family: var(--mono); font-size: 9px; color: var(--muted); }
+
+/* Calendar */
+.cal-list  { display: flex; flex-direction: column; gap: 6px; }
+.cal-item  { display: flex; gap: 10px; align-items: center; padding: 9px 11px; background: rgba(255,255,255,0.02); border-radius: var(--r-sm); border: 1px solid var(--border); transition: border-color 0.2s; }
+.cal-item.today { border-color: rgba(0,240,208,0.4); background: rgba(0,240,208,0.05); }
+.cal-item:hover { border-color: var(--border-bright); }
+.cal-day   { font-family: var(--mono); font-size: 9px; color: var(--muted); width: 32px; flex-shrink: 0; text-transform: uppercase; letter-spacing: 1px; }
+.cal-day.today-label { color: var(--aurora); font-weight: 700; }
+.cal-orb   { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.cal-text  { font-size: 11px; line-height: 1.45; color: var(--star); }
+.cal-format{ font-family: var(--mono); font-size: 8px; color: var(--muted); margin-top: 2px; }
+
+/* Launches & Space weather */
+.launch-item, .weather-item {
+  padding: 10px 12px; background: rgba(255,255,255,0.02); border-radius: var(--r-sm); border: 1px solid var(--border);
+  transition: border-color 0.2s, transform 0.2s var(--ease); margin-bottom: 8px;
+}
+.launch-item:last-child, .weather-item:last-child { margin-bottom: 0; }
+.launch-item:hover, .weather-item:hover { border-color: var(--border-bright); transform: translateX(2px); }
+.launch-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.launch-name   { font-size: 11.5px; color: var(--star); font-weight: 600; line-height: 1.4; }
+.launch-status { font-family: var(--mono); font-size: 8.5px; color: var(--aurora); letter-spacing: 1.5px; text-transform: uppercase; flex-shrink: 0; }
+.launch-status.tbd { color: var(--gold); }
+.launch-meta   { font-family: var(--mono); font-size: 9px; color: var(--muted); margin-top: 5px; }
+.weather-top   { display: flex; align-items: center; gap: 8px; }
+.weather-icon  { font-size: 13px; }
+.weather-type  { font-family: var(--mono); font-size: 9px; color: var(--aurora); font-weight: 700; letter-spacing: 1px; }
+.weather-detail{ font-size: 11px; color: var(--star); line-height: 1.45; margin-top: 4px; }
+.weather-time  { font-family: var(--mono); font-size: 8.5px; color: var(--muted); margin-top: 3px; }
+
+@media (max-width: 600px) {
+  .dashboard-main { padding: 20px 16px; }
+  .telemetry-strip { padding: 12px 16px; gap: 0; }
+  .telem-item { padding: 0 16px; }
+}

@@ -1,0 +1,138 @@
+/* Base resets + page-level atmosphere — ported from the static site's body
+   styles. Interactive pieces (starfield, cursor glow) are now React/R3F
+   components instead of inline canvases. */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body, #root {
+  min-height: 100vh;
+}
+
+html, body {
+  background:
+    radial-gradient(ellipse 1000px 680px at 12% -8%, rgba(123,47,190,0.16), transparent 60%),
+    radial-gradient(ellipse 760px 540px at 108% 6%, rgba(0,240,208,0.07), transparent 58%),
+    radial-gradient(ellipse 1100px 760px at 50% 118%, rgba(52,97,232,0.10), transparent 62%),
+    var(--void);
+  color: var(--star);
+  font-family: var(--sans);
+  overflow-x: hidden;
+}
+
+::selection { background: var(--aurora); color: var(--void); }
+
+a { color: inherit; }
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* subtle film-grain scanline overlay, fixed above everything else (matches
+   the static site's body::after) */
+.film-grain {
+  position: fixed; inset: 0; z-index: 2; pointer-events: none;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.022) 2px, rgba(0,0,0,0.022) 4px);
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--nebula-light); }
+
+/* visible focus ring for keyboard navigation — accessibility, not present
+   in the original (mouse-only) static design, added during the migration */
+:focus-visible {
+  outline: 2px solid var(--aurora);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Main content area — sits above StarfieldBackground (z-index 0) */
+.app-main {
+  position: relative;
+  z-index: 1;
+  padding-top: 64px; /* topbar height */
+  min-height: 100dvh;
+}
+
+/* Placeholder view — used while real route content is being built */
+.view-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  min-height: calc(100dvh - 64px);
+  text-align: center;
+  padding: 48px 24px;
+}
+
+.vp-badge {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--void);
+  background: linear-gradient(120deg, var(--aurora), #4fe0d0);
+  padding: 6px 14px;
+  border-radius: var(--r-xs);
+  box-shadow: 0 0 18px rgba(0, 240, 208, 0.35);
+}
+
+.vp-h1 {
+  font-family: var(--display);
+  font-size: clamp(36px, 6vw, 72px);
+  font-weight: 800;
+  color: var(--star);
+  letter-spacing: 1px;
+  text-shadow: 0 0 40px rgba(0, 240, 208, 0.2);
+}
+
+.vp-sub {
+  font-family: var(--sans);
+  font-size: 16px;
+  color: var(--muted);
+  max-width: 480px;
+}
+
+.vp-live-dot {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--aurora);
+  text-shadow: 0 0 8px rgba(0, 240, 208, 0.5);
+}
+
+.vp-hint {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--muted-2);
+  letter-spacing: 1.5px;
+  border: 1px dashed var(--border);
+  padding: 6px 14px;
+  border-radius: var(--r-sm);
+}
+
+/* Explore view wrapper */
+.explore-view {
+  min-height: 100dvh;
+}
+
+/* Section divider between scroll sections */
+.explore-view > section + section {
+  border-top: 1px solid var(--border);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
