@@ -8,6 +8,8 @@ import { CompetitorsPanel } from '../components/dashboard/CompetitorsPanel';
 import { CalendarPanel } from '../components/dashboard/CalendarPanel';
 import { LaunchesPanel } from '../components/dashboard/LaunchesPanel';
 import { SpaceWeatherPanel } from '../components/dashboard/SpaceWeatherPanel';
+import { ISSPanel } from '../components/dashboard/ISSPanel';
+import { AchievementsPanel } from '../components/dashboard/AchievementsPanel';
 import '../components/dashboard/Dashboard.css';
 
 const PAGE = {
@@ -95,6 +97,12 @@ export default function DashboardView({ data }) {
           <LaunchesPanel />
           <SpaceWeatherPanel />
         </div>
+
+        <div className="section-label">ISS Command</div>
+        <ISSPanel />
+
+        <div className="section-label">Mission Rank</div>
+        <AchievementsPanel data={data} />
       </div>
     </motion.div>
   );

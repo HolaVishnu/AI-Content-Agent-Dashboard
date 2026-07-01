@@ -1,6 +1,9 @@
 import { motion } from 'framer-motion';
 import { useJsonFetch } from '../hooks/useJsonFetch';
 import { FeedColumn } from '../components/briefing/FeedColumn';
+import { MissionDayHeader } from '../components/briefing/MissionDayHeader';
+import { APODPanel } from '../components/briefing/APODPanel';
+import { ShootWindowPanel } from '../components/briefing/ShootWindowPanel';
 import '../components/briefing/Briefing.css';
 
 const PAGE = {
@@ -17,9 +20,9 @@ const COLUMNS = [
   { key: 'stocks', title: '📈 Stocks',           delay: 0.28 },
 ];
 
-export default function BriefingView() {
-  const { data, loading, error } = useJsonFetch('/news.json');
-  const cols = data?.columns || {};
+export default function BriefingView({ data }) {
+  const { data: news, loading, error } = useJsonFetch('/news.json');
+  const cols = news?.columns || {};
 
   return (
     <motion.div
@@ -29,11 +32,14 @@ export default function BriefingView() {
       animate="animate"
       exit="exit"
     >
-      <div className="briefing-header">
-        <div className="briefing-eyebrow">◈ Signal Feeds</div>
-        <h1 className="briefing-title">Daily Intel Report</h1>
-        <p className="briefing-sub">Space · AI · Bikes & Travel · World News · Stocks</p>
+      <MissionDayHeader data={data} />
+
+      <div className="briefing-command-row">
+        <APODPanel />
+        <ShootWindowPanel />
       </div>
+
+      <div className="briefing-feeds-label">◈ Signal Feeds · Space · AI · Bikes · World · Markets</div>
 
       <div className="feed-columns">
         {COLUMNS.map(({ key, title, delay }) => (
