@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { GlassCard } from '../ui/GlassCard';
 import { MagneticButton } from '../ui/MagneticButton';
+import { deriveInsights } from '../../utils/agentInsights';
 
-const AGENT_SERVER = 'http://localhost:3001';
+const BASE = import.meta.env.BASE_URL || '/';
 
 function OutputItem({ label, text }) {
   return (
@@ -19,15 +20,17 @@ export function AgentCard({ agent }) {
   const [status, setStatus] = useState('idle'); // idle | loading | done | error
   const [ts, setTs]         = useState('');
 
+  // Re-pull the latest Instagram data (data.json, refreshed by the pull script)
+  // and recompute this agent's insights locally — no backend, no AI, fully free.
   async function uplink() {
     setStatus('loading');
     try {
-      const res  = await fetch(`${AGENT_SERVER}/agent/${cls}`);
+      const res  = await fetch(`${BASE}data.json?t=${Date.now()}`);
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      setItems(data.items);
-      setTs('✓ SYNCED ' + new Date(data.generatedAt).toLocaleTimeString());
+      setItems(deriveInsights(cls, data));
+      const pulled = data.realDataPulledAt ? new Date(data.realDataPulledAt).toLocaleString() : new Date().toLocaleTimeString();
+      setTs('✓ REFRESHED · data from ' + pulled);
       setStatus('done');
     } catch (e) {
       setTs('⚠ ' + e.message);
@@ -55,9 +58,9 @@ export function AgentCard({ agent }) {
         className="agent-uplink-btn"
         onClick={uplink}
         disabled={status === 'loading'}
-        aria-label={`Uplink ${name} agent`}
+        aria-label={`Refresh ${name} insights`}
       >
-        {status === 'loading' ? '⟳ UPLINK...' : status === 'done' ? '⚡ RE-UPLINK' : '⚡ UPLINK AGENT'}
+        {status === 'loading' ? '⟳ REFRESHING...' : status === 'done' ? '⟳ REFRESH DATA' : '⚡ REFRESH INSIGHTS'}
       </MagneticButton>
       {ts && <div className="agent-ts">{ts}</div>}
     </GlassCard>

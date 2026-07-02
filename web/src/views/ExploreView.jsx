@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion';
 import { Hero } from '../components/hero/Hero';
 import { GalaxySection } from '../components/galaxy/GalaxySection';
-import { ConstellationsSection } from '../components/constellations/ConstellationsSection';
 
 const PAGE = {
   initial: { opacity: 0 },
@@ -14,7 +13,6 @@ export default function ExploreView() {
     <motion.div className="explore-view" variants={PAGE} initial="initial" animate="animate" exit="exit">
       <Hero />
       <GalaxySection />
-      <ConstellationsSection />
     </motion.div>
   );
 }

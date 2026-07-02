@@ -33,7 +33,7 @@ function AppShell({ data, status }) {
       <StarfieldBackground />
       <div className="film-grain" aria-hidden="true" />
       <CursorGlow />
-      <Navbar liveStatus={status} />
+      <Navbar liveStatus={status} data={data} />
 
       <main className="app-main">
         <Suspense fallback={<RouteLoader />}>
