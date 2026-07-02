@@ -6,9 +6,12 @@ export function solveKepler(M, e) {
 }
 
 // Position (scene-space x, z + real heliocentric distance r in AU) for a comet right now.
+// `visualPeriod` (optional) overrides `period` for on-screen motion speed only —
+// used for very long-period comets that would otherwise appear frozen. The orbit
+// shape (a/e/sceneA/omega) and the displayed `period` are unaffected.
 export function cometPositionNow(comet, now) {
   const epochMs = new Date(comet.epoch).getTime();
-  const periodDays = comet.period * 365.25;
+  const periodDays = (comet.visualPeriod ?? comet.period) * 365.25;
   const n = (2 * Math.PI) / periodDays;
   const daysSincePerihelion = (now.getTime() - epochMs) / 86400000;
   const M = (((daysSincePerihelion * n) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);

@@ -64,16 +64,16 @@ export const MOONS = {
 
 export const COMETS = [
   { key:'halley', name:"Halley's Comet", designation:'1P/Halley', a:17.8, e:0.967, period:75.32,
-    epoch:'1986-02-09', sceneA:140, omega:30, color:0xbfe9ff,
+    epoch:'1986-02-09', sceneA:140, omega:30, color:0x55aaff,
     desc:'The most famous periodic comet, visible to the naked eye every ~76 years. Last seen 1986, returns 2061.' },
   { key:'encke', name:'Comet Encke', designation:'2P/Encke', a:2.22, e:0.848, period:3.30,
-    epoch:'2023-10-22', sceneA:55, omega:160, color:0xffd9a0,
+    epoch:'2023-10-22', sceneA:55, omega:160, color:0xff9922,
     desc:'The shortest known orbital period of any comet at 3.3 years — observed on more returns than any other.' },
   { key:'67p', name:'67P/Churyumov–Gerasimenko', designation:'67P', a:3.46, e:0.641, period:6.44,
-    epoch:'2021-11-02', sceneA:80, omega:280, color:0xc7ffb0,
+    epoch:'2021-11-02', sceneA:80, omega:280, color:0x44dd88,
     desc:"Target of ESA's Rosetta mission (2014–2016) — the first spacecraft to orbit and land on a comet." },
-  { key:'neowise', name:'Comet NEOWISE', designation:'C/2020 F3', a:358, e:0.999, period:6800,
-    epoch:'2020-07-03', sceneA:200, omega:90, color:0xffb0d9,
+  { key:'neowise', name:'Comet NEOWISE', designation:'C/2020 F3', a:358, e:0.92, period:300, visualPeriod:12,
+    epoch:'2020-07-03', sceneA:105, omega:95, color:0xff44aa,
     desc:"A long-period comet that dazzled naked-eye observers in 2020. Won't return for roughly 6,800 years." },
 ];
 

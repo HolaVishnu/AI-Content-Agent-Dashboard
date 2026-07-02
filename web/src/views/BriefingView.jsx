@@ -1,9 +1,13 @@
+import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useJsonFetch } from '../hooks/useJsonFetch';
+import { AGENT_META, deriveInsights } from '../utils/agentInsights';
 import { FeedColumn } from '../components/briefing/FeedColumn';
 import { MissionDayHeader } from '../components/briefing/MissionDayHeader';
 import { APODPanel } from '../components/briefing/APODPanel';
 import { ShootWindowPanel } from '../components/briefing/ShootWindowPanel';
+import { AgentCard } from '../components/dashboard/AgentCard';
+import '../components/dashboard/Dashboard.css';
 import '../components/briefing/Briefing.css';
 
 const PAGE = {
@@ -20,9 +24,15 @@ const COLUMNS = [
   { key: 'stocks', title: '📈 Stocks',           delay: 0.28 },
 ];
 
+// Builds the 5 agent cards with real insights computed from data.json (Instagram data)
+function buildAgents(data) {
+  return AGENT_META.map((meta) => ({ ...meta, items: deriveInsights(meta.cls, data) }));
+}
+
 export default function BriefingView({ data }) {
   const { data: news, loading, error } = useJsonFetch('/news.json');
   const cols = news?.columns || {};
+  const agents = useMemo(() => buildAgents(data), [data]);
 
   return (
     <motion.div
@@ -37,6 +47,13 @@ export default function BriefingView({ data }) {
       <div className="briefing-command-row">
         <APODPanel />
         <ShootWindowPanel />
+      </div>
+
+      <div className="section-label">Intelligence Agents</div>
+      <div className="agents-grid">
+        {agents.map((agent) => (
+          <AgentCard key={agent.cls} agent={agent} />
+        ))}
       </div>
 
       <div className="briefing-feeds-label">◈ Signal Feeds · Space · AI · Bikes · World · Markets</div>
