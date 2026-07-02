@@ -15,7 +15,8 @@ export function useDashboardData() {
 
     async function load() {
       try {
-        const res = await fetch('/data.json?t=' + Date.now());
+        const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+        const res = await fetch(`${base}/data.json?t=` + Date.now());
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const json = await res.json();
         if (cancelled) return;

@@ -67,5 +67,16 @@
 
 @media (max-width: 720px) {
   .mission-title { display: none; }
-  .topbar { padding: 0 16px; }
+  .topbar { padding: 0 12px; gap: 6px; }
+  .nav-level-pill { display: none; }
+  .status-pill span { display: none; }
+  .met-clock { display: none; }
+  .utc-clock { font-size: 11px; }
+  .nav-tab { padding: 7px 11px; font-size: 10px; letter-spacing: 1px; }
+  .topbar-right { gap: 10px; }
+}
+
+@media (max-width: 480px) {
+  .clock-block { display: none; }
+  .nav-tab { padding: 6px 9px; font-size: 9.5px; }
 }

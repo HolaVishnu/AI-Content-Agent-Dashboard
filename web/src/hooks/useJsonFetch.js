@@ -13,7 +13,8 @@ export function useJsonFetch(path) {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    fetch(`${path}?t=${Date.now()}`)
+    const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+    fetch(`${base}${path}?t=${Date.now()}`)
       .then((res) => {
         if (!res.ok) throw new Error('HTTP ' + res.status);
         return res.json();

@@ -3,7 +3,6 @@ import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import { Navbar } from './components/layout/Navbar';
 import { Footer } from './components/layout/Footer';
-import { CursorGlow } from './components/layout/CursorGlow';
 import { StarfieldBackground } from './components/layout/StarfieldBackground';
 import { useDashboardData } from './hooks/useDashboardData';
 
@@ -32,12 +31,11 @@ function AppShell({ data, status }) {
     <>
       <StarfieldBackground />
       <div className="film-grain" aria-hidden="true" />
-      <CursorGlow />
       <Navbar liveStatus={status} data={data} />
 
       <main className="app-main">
         <Suspense fallback={<RouteLoader />}>
-          <AnimatePresence mode="wait" initial={false}>
+          <AnimatePresence mode="sync" initial={false}>
             <Routes location={location} key={location.pathname}>
               <Route path="/"          element={<ExploreView />} />
               <Route path="/dashboard" element={<DashboardView data={data} />} />
