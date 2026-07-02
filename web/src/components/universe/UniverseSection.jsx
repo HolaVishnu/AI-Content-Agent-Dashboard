@@ -1,199 +1,135 @@
-import { useRef, useState, useMemo } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { Stars, Html } from '@react-three/drei';
-import * as THREE from 'three';
-import { motion } from 'framer-motion';
-import { useInView } from '../../hooks/useInView';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import './Universe.css';
 
-const COSMIC_SCALES = [
-  { key:'solar-system', name:'Solar System', type:'~1 light-day across', rNorm:0.12,
+export const COSMIC_SCALES = [
+  { key:'solar-system',      name:'Solar System',        size:'~1 light-day across',
+    color:'#4af0ff', r:8,
     desc:'The Sun and its eight planets — vanishingly small at this scale, but home.' },
-  { key:'local-bubble', name:'Local Bubble', type:'~1,000 light-years across', rNorm:0.28,
+  { key:'local-bubble',      name:'Local Bubble',         size:'~1,000 light-years across',
+    color:'#6655ff', r:16,
     desc:'A low-density cavity in the interstellar medium, carved by ancient supernovae, that the Sun currently drifts through.' },
-  { key:'milky-way', name:'Milky Way', type:'~100,000 light-years across', rNorm:0.46,
+  { key:'milky-way',         name:'Milky Way',            size:'~100,000 light-years across',
+    color:'#9944ee', r:24,
     desc:'Our home galaxy — a barred spiral of 200–400 billion stars, 13.6 billion years old.' },
-  { key:'local-group', name:'Local Group', type:'~10 million light-years across', rNorm:0.64,
+  { key:'local-group',       name:'Local Group',          size:'~10 million light-years across',
+    color:'#cc44cc', r:33,
     desc:'A gravitationally bound group of ~80 galaxies including the Milky Way, Andromeda, and Triangulum.' },
-  { key:'virgo-supercluster', name:'Virgo Supercluster', type:'~110 million light-years across', rNorm:0.82,
+  { key:'virgo-supercluster',name:'Virgo Supercluster',   size:'~110 million light-years across',
+    color:'#ee4466', r:42,
     desc:'A vast supercluster of galaxy groups, including the Local Group, all loosely bound by gravity.' },
-  { key:'observable-universe', name:'Observable Universe', type:'~93 billion light-years across', rNorm:0.98,
+  { key:'observable-universe',name:'Observable Universe', size:'~93 billion light-years across',
+    color:'#ff7733', r:50,
     desc:'The full extent of space we can observe from Earth, containing an estimated 2 trillion galaxies.' },
 ];
 
-const RING_COLORS = [
-  new THREE.Color(0x4488ff),
-  new THREE.Color(0x6655ff),
-  new THREE.Color(0x9944ee),
-  new THREE.Color(0xcc44cc),
-  new THREE.Color(0xee4488),
-  new THREE.Color(0xff6644),
-];
-
-// Animated concentric ring
-function CosmicRing({ scale, idx, hovered, onHover, onLeave, onClick }) {
-  const obj = useMemo(() => {
-    const r = scale.rNorm * 28;
-    const pts = [];
-    for (let i = 0; i <= 256; i++) {
-      const a = (i / 256) * Math.PI * 2;
-      pts.push(new THREE.Vector3(Math.cos(a) * r, Math.sin(a) * r, 0));
-    }
-    const geo = new THREE.BufferGeometry().setFromPoints(pts);
-    const mat = new THREE.LineBasicMaterial({
-      color: RING_COLORS[idx] || RING_COLORS[5],
-      transparent: true,
-      opacity: hovered ? 0.95 : 0.38 + idx * 0.08,
-    });
-    return new THREE.LineLoop(geo, mat);
-  // Recreate when hovered state changes
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [idx, scale.rNorm, hovered]);
-
-  const meshRef = useRef();
-  useFrame((_, delta) => {
-    if (!meshRef.current) return;
-    // Pulse when hovered
-    if (hovered) {
-      obj.material.opacity = 0.7 + 0.25 * Math.sin(Date.now() * 0.004);
-    }
-    meshRef.current.rotation.z += delta * (0.004 + idx * 0.001);
-  });
-
-  const r = scale.rNorm * 28;
-  const hitR = 1.5;
-
-  return (
-    <group ref={meshRef}>
-      <primitive object={obj} />
-      {/* Invisible hit mesh ring for pointer events */}
-      <mesh
-        position={[r * 0.707, r * 0.707, 0]}
-        onPointerOver={(e) => { e.stopPropagation(); onHover(scale.key); document.body.style.cursor = 'pointer'; }}
-        onPointerOut={(e) => { e.stopPropagation(); onLeave(); document.body.style.cursor = 'default'; }}
-        onClick={(e) => { e.stopPropagation(); onClick(scale); }}
-      >
-        <sphereGeometry args={[hitR, 8, 8]} />
-        <meshBasicMaterial transparent opacity={0} />
-      </mesh>
-
-      {hovered && (
-        <Html position={[r * 0.707, r * 0.707, 0]} center distanceFactor={60} style={{ pointerEvents: 'none' }}>
-          <div className="universe-tooltip">
-            <div className="universe-tooltip-name">{scale.name}</div>
-            <div className="universe-tooltip-type">{scale.type}</div>
-            <p className="universe-tooltip-desc">{scale.desc}</p>
-          </div>
-        </Html>
-      )}
-    </group>
-  );
-}
-
-// "You Are Here" dot at center
-function YouAreHere() {
-  const meshRef = useRef();
-  useFrame((_, delta) => {
-    if (meshRef.current) meshRef.current.rotation.z += delta * 0.8;
-  });
-  return (
-    <group>
-      <mesh>
-        <sphereGeometry args={[0.35, 12, 12]} />
-        <meshBasicMaterial color={0x00F5D4} />
-      </mesh>
-      <mesh ref={meshRef}>
-        <ringGeometry args={[0.55, 0.75, 24]} />
-        <meshBasicMaterial color={0x00F5D4} transparent opacity={0.4} side={THREE.DoubleSide} />
-      </mesh>
-    </group>
-  );
-}
-
-// Galaxy dots scattered in background
-function GalaxyField() {
-  const positions = useMemo(() => {
-    const pos = new Float32Array(600 * 3);
-    for (let i = 0; i < 600; i++) {
-      const r = (Math.random() * 0.9 + 0.05) * 28;
-      const a = Math.random() * Math.PI * 2;
-      pos[i * 3]     = Math.cos(a) * r;
-      pos[i * 3 + 1] = Math.sin(a) * r;
-      pos[i * 3 + 2] = (Math.random() - 0.5) * 2;
-    }
-    return pos;
-  }, []);
-  return (
-    <points>
-      <bufferGeometry>
-        <bufferAttribute attach="attributes-position" args={[positions, 3]} count={600} />
-      </bufferGeometry>
-      <pointsMaterial size={0.08} color={0xaabbff} transparent opacity={0.4} />
-    </points>
-  );
-}
-
-function UniverseContent({ onSelect }) {
-  const [hoveredKey, setHoveredKey] = useState(null);
-
-  return (
-    <>
-      <color attach="background" args={['#030308']} />
-      <fog attach="fog" args={['#030308', 80, 180]} />
-      <ambientLight intensity={0.5} />
-      <Stars radius={200} depth={60} count={3000} factor={2} saturation={0} />
-      <GalaxyField />
-      <YouAreHere />
-
-      {COSMIC_SCALES.map((scale, i) => (
-        <CosmicRing
-          key={scale.key}
-          scale={scale}
-          idx={i}
-          hovered={hoveredKey === scale.key}
-          onHover={setHoveredKey}
-          onLeave={() => setHoveredKey(null)}
-          onClick={onSelect}
-        />
-      ))}
-    </>
-  );
-}
-
 export function UniverseSection() {
-  const [ref, inView] = useInView({ rootMargin: '120% 0px 120% 0px' });
   const [selected, setSelected] = useState(null);
+  const [hovered, setHovered]   = useState(null);
 
   return (
-    <section className="universe-section" ref={ref} aria-label="Observable universe scale explorer">
+    <section className="universe-section" aria-label="Observable universe scale explorer">
       <div className="universe-header">
         <div className="universe-eyebrow">◈ Cosmic Perspective</div>
         <h2 className="universe-title">The Observable Universe</h2>
-        <p className="universe-sub">
-          Each ring represents a scale of existence — hover to explore, click for details
-        </p>
+        <p className="universe-sub">Each ring is a scale of existence — hover to explore, click for details</p>
       </div>
 
       <div className="universe-stage">
-        {inView && (
-          <Canvas
-            camera={{ position: [0, 0, 55], fov: 60 }}
-            gl={{ antialias: true, powerPreference: 'high-performance' }}
-          >
-            <UniverseContent onSelect={setSelected} />
-          </Canvas>
-        )}
-        {!inView && <div className="universe-placeholder">Loading universe…</div>}
+        {/* Star dots background */}
+        <div className="universe-stars" aria-hidden="true">
+          {Array.from({ length: 80 }, (_, i) => (
+            <div
+              key={i}
+              className="universe-star-dot"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top:  `${Math.random() * 100}%`,
+                width:  `${1 + Math.random() * 1.5}px`,
+                height: `${1 + Math.random() * 1.5}px`,
+                opacity: 0.3 + Math.random() * 0.5,
+                animationDelay: `${Math.random() * 4}s`,
+                animationDuration: `${2 + Math.random() * 3}s`,
+              }}
+            />
+          ))}
+        </div>
+
+        {/* SVG rings */}
+        <svg className="universe-svg" viewBox="0 0 110 110" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+          <defs>
+            {COSMIC_SCALES.map((s) => (
+              <filter key={`glow-${s.key}`} id={`glow-${s.key}`}>
+                <feGaussianBlur stdDeviation={hovered === s.key ? '1.6' : '0.8'} result="blur" />
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            ))}
+          </defs>
+
+          {COSMIC_SCALES.map((s, i) => (
+            <g key={s.key}>
+              <circle
+                cx="55" cy="55" r={s.r}
+                fill="none"
+                stroke={s.color}
+                strokeWidth={hovered === s.key || selected?.key === s.key ? 1.0 : 0.45}
+                opacity={hovered === s.key || selected?.key === s.key ? 1 : 0.5 + i * 0.07}
+                filter={`url(#glow-${s.key})`}
+                className="universe-ring"
+                style={{ '--ring-delay': `${i * 0.18}s`, '--ring-color': s.color }}
+                onMouseEnter={() => setHovered(s.key)}
+                onMouseLeave={() => setHovered(null)}
+                onClick={() => setSelected(s)}
+                cursor="pointer"
+              />
+              {/* Label dot at ~60° position */}
+              <circle
+                cx={55 + s.r * Math.cos(Math.PI / 3)}
+                cy={55 - s.r * Math.sin(Math.PI / 3)}
+                r={hovered === s.key ? 1.8 : 1.1}
+                fill={s.color}
+                opacity={hovered === s.key ? 1 : 0.7}
+                filter={`url(#glow-${s.key})`}
+                onMouseEnter={() => setHovered(s.key)}
+                onMouseLeave={() => setHovered(null)}
+                onClick={() => setSelected(s)}
+                cursor="pointer"
+                className="universe-ring-dot"
+              />
+            </g>
+          ))}
+
+          {/* You Are Here */}
+          <circle cx="55" cy="55" r="1.5" fill="#00F5D4" />
+          <circle cx="55" cy="55" r="3.0" fill="none" stroke="#00F5D4" strokeWidth="0.4" opacity="0.5" className="universe-you-pulse" />
+          <text x="55" y="49" textAnchor="middle" fill="#00F5D4" fontSize="2.8" fontFamily="monospace" opacity="0.7">YOU ARE HERE</text>
+        </svg>
+
+        {/* Hover tooltip */}
+        <AnimatePresence>
+          {hovered && !selected && (
+            <motion.div
+              className="universe-hover-tip"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              key={hovered}
+            >
+              {(() => { const s = COSMIC_SCALES.find(x => x.key === hovered);
+                return s ? <><strong>{s.name}</strong><span>{s.size}</span></> : null; })()}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Scale pills */}
       <div className="universe-pills">
-        {COSMIC_SCALES.map((s, i) => (
+        {COSMIC_SCALES.map((s) => (
           <button
             key={s.key}
             className={`universe-pill${selected?.key === s.key ? ' active' : ''}`}
-            style={{ '--pill-color': `#${RING_COLORS[i].getHexString()}` }}
-            onClick={() => setSelected(s)}
+            style={{ '--pill-color': s.color }}
+            onClick={() => setSelected(prev => prev?.key === s.key ? null : s)}
           >
             {s.name}
           </button>
@@ -201,20 +137,23 @@ export function UniverseSection() {
       </div>
 
       {/* Selected detail */}
-      {selected && (
-        <motion.div
-          className="universe-detail"
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 8 }}
-          key={selected.key}
-        >
-          <button className="universe-detail-close" onClick={() => setSelected(null)}>✕</button>
-          <div className="universe-detail-name">{selected.name}</div>
-          <div className="universe-detail-type">{selected.type}</div>
-          <p className="universe-detail-desc">{selected.desc}</p>
-        </motion.div>
-      )}
+      <AnimatePresence>
+        {selected && (
+          <motion.div
+            className="universe-detail"
+            style={{ '--detail-color': selected.color }}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 8 }}
+            key={selected.key}
+          >
+            <button className="universe-detail-close" onClick={() => setSelected(null)}>✕</button>
+            <div className="universe-detail-name" style={{ color: selected.color }}>{selected.name}</div>
+            <div className="universe-detail-type">{selected.size}</div>
+            <p className="universe-detail-desc">{selected.desc}</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }

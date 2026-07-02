@@ -7,7 +7,6 @@ import { SolarSystemScene } from './SolarSystemScene';
 import { ExoSystemScene } from './ExoSystemScene';
 import { BodyDetailPanel } from './BodyDetailPanel';
 import { SimControls } from './SimControls';
-import { NeoPanel } from './NeoPanel';
 import { ConstellationView } from './ConstellationView';
 import './Galaxy.css';
 
@@ -47,7 +46,7 @@ export function GalaxySection() {
   const [timeWarp, setTimeWarp]         = useState(40);
   const [selectedBody, setSelectedBody] = useState(null);
 
-  // Which tab is "active" for the tab bar highlight
+  // Which tab is "active" for the tab bar highlight (exo is a sub-view of galaxy)
   const activeTab = view === 'exo' ? 'galaxy' : view;
 
   function enterSystem(key) {
@@ -104,7 +103,7 @@ export function GalaxySection() {
       {/* ── Stage ── */}
       <div className="galaxy-stage">
         {inView ? (
-          <AnimatePresence mode="wait">
+          <AnimatePresence mode="sync">
             {/* Galaxy map */}
             {view === 'galaxy' && (
               <motion.div key="galaxy" className="galaxy-view" variants={CINEMATIC} initial="initial" animate="animate" exit="exit">
@@ -136,14 +135,35 @@ export function GalaxySection() {
                   timeWarp={timeWarp}
                   setTimeWarp={setTimeWarp}
                 />
-                <NeoPanel />
                 <BodyDetailPanel body={selectedBody} onClose={() => setSelectedBody(null)} />
               </motion.div>
             )}
 
             {/* Exo system */}
             {view === 'exo' && activeSystem && (
-              <motion.div key="exo" className="solar-view" variants={CINEMATIC} initial="initial" animate="animate" exit="exit">
+              <motion.div key={`exo-${activeSystem.key}`} className="solar-view" variants={CINEMATIC} initial="initial" animate="animate" exit="exit">
+                {/* ── Floating system-switcher bar ── */}
+                <div className="exo-quick-switch">
+                  <button className="eqs-back" onClick={() => { setView('galaxy'); setActiveSystem(null); setSelectedBody(null); }}>
+                    ◈ Galaxy Map
+                  </button>
+                  <span className="eqs-divider" />
+                  {STAR_SYSTEMS.filter((s) => !s.isSol).map((sys) => (
+                    <button
+                      key={sys.key}
+                      className={`eqs-btn${activeSystem.key === sys.key ? ' active' : ''}`}
+                      style={{ '--sc': sys.starColor ? `#${sys.starColor.toString(16).padStart(6, '0')}` : '#fff0c0' }}
+                      onClick={() => { setSelectedBody(null); enterSystem(sys.key); }}
+                    >
+                      <span className="eqs-dot" />
+                      <span className="eqs-name">{sys.name}</span>
+                    </button>
+                  ))}
+                  <span className="eqs-divider" />
+                  <button className="eqs-sol-btn" onClick={() => { setSelectedBody(null); enterSystem('sol'); }}>
+                    ☀ Sol
+                  </button>
+                </div>
                 <ExoSystemScene
                   system={activeSystem}
                   selectedBody={selectedBody}
@@ -159,6 +179,7 @@ export function GalaxySection() {
                 <ConstellationView />
               </motion.div>
             )}
+
           </AnimatePresence>
         ) : (
           <div className="galaxy-placeholder">
