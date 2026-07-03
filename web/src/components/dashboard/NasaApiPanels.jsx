@@ -2,8 +2,13 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const KEY = 'DEMO_KEY';
+const KEY = import.meta.env.VITE_NASA_API_KEY || 'DEMO_KEY';
 const DAY_MS = 86_400_000;
+
+function checkRateLimit(d) {
+  if (d?.error?.code === 'OVER_RATE_LIMIT') throw new Error('RATE_LIMIT');
+  return d;
+}
 
 // In-memory cache for gallery (session only, short TTL)
 const _mem = {};
@@ -12,6 +17,7 @@ function cachedFetch(url, ttl = 1_800_000) {
   if (_mem[url] && now - _mem[url].ts < ttl) return Promise.resolve(_mem[url].data);
   return fetch(url)
     .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(checkRateLimit)
     .then(d => { _mem[url] = { data: d, ts: Date.now() }; return d; });
 }
 
@@ -29,6 +35,7 @@ function dailyCachedFetch(url) {
 
   return fetch(url)
     .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(checkRateLimit)
     .then(d => {
       try { localStorage.setItem(lsKey, JSON.stringify({ data: d, ts: Date.now() })); } catch (_) {}
       return d;
@@ -240,18 +247,22 @@ export function MarsRoverPanel() {
   const [light,     setLight]     = useState(null);
 
   useEffect(() => {
+    let cancelled = false;
     setLoading(true);
     setPhotos([]);
-    dailyCachedFetch(`https://api.nasa.gov/mars-photos/api/v1/manifests/${rover}?api_key=${KEY}`)
+    setRoverInfo(null);
+    // latest_photos always returns the most recent available sol — no manifest needed
+    dailyCachedFetch(`https://api.nasa.gov/mars-photos/api/v1/rovers/${rover}/latest_photos?api_key=${KEY}`)
       .then(data => {
-        const manifest = data.photo_manifest;
-        if (!manifest) throw new Error('no manifest');
-        setRoverInfo({ name: manifest.name, status: manifest.status, total: manifest.total_photos });
-        return dailyCachedFetch(`https://api.nasa.gov/mars-photos/api/v1/rovers/${rover}/photos?sol=${manifest.max_sol}&api_key=${KEY}`);
+        if (cancelled) return;
+        const all = data.latest_photos || [];
+        const first = all[0];
+        if (first) setRoverInfo({ name: first.rover.name, status: first.rover.status, total: first.rover.total_photos });
+        setPhotos(all.slice(0, 6));
       })
-      .then(data => setPhotos((data.photos || []).slice(0, 6)))
-      .catch(() => {})
-      .finally(() => setLoading(false));
+      .catch(e => { if (!cancelled) setPhotos(e?.message === 'RATE_LIMIT' || e?.message === '429' ? 'rate_limit' : 'error'); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
   }, [rover]);
 
   return (
@@ -271,8 +282,10 @@ export function MarsRoverPanel() {
         )}
       </div>
       {loading && <div className="panel-empty">Downloading from Mars…</div>}
-      {!loading && photos.length === 0 && <div className="panel-empty">No photos available</div>}
-      {!loading && photos.length > 0 && (
+      {!loading && photos === 'rate_limit' && <div className="panel-empty" style={{color:'var(--aurora)'}}>⚠ NASA API rate limit reached — resets hourly.<br/>Add VITE_NASA_API_KEY to web/.env for 1,000 req/hr.</div>}
+      {!loading && photos === 'error' && <div className="panel-empty" style={{color:'var(--aurora)'}}>⚠ Failed to load rover photos</div>}
+      {!loading && Array.isArray(photos) && photos.length === 0 && <div className="panel-empty">No photos available</div>}
+      {!loading && Array.isArray(photos) && photos.length > 0 && (
         <>
           <div className="nasa-gallery-grid">
             {photos.map((p, pi) => (
@@ -327,16 +340,22 @@ function qualityScore(href = '') {
   return 0;
 }
 
-// Fallback chain for grid: large → medium → original preview URL
+// Fallback chain: large → medium → original; hide tile if all fail (avoids black-square corruption)
 function GalleryImg({ href, alt, className, ...rest }) {
-  const [src, setSrc] = useState(() => upgradeUrl(href, 'large'));
-  const fallbacks = [upgradeUrl(href, 'medium'), href];
-  let fi = 0;
+  const [src,     setSrc]   = useState(() => upgradeUrl(href, 'large'));
+  const [visible, setVisible] = useState(true);
+  const fallbacksRef = useRef([upgradeUrl(href, 'medium'), href]);
+  const fiRef        = useRef(0);
   const onError = (e) => {
-    if (fi < fallbacks.length) {
-      e.target.src = fallbacks[fi++];
+    const fi = fiRef.current;
+    if (fi < fallbacksRef.current.length) {
+      e.target.src = fallbacksRef.current[fi];
+      fiRef.current = fi + 1;
+    } else {
+      setVisible(false); // all sources failed — hide rather than show broken/corrupt image
     }
   };
+  if (!visible) return null;
   return <img src={src} alt={alt} className={className} onError={onError} {...rest} />;
 }
 
@@ -361,7 +380,7 @@ export function NasaGalleryPanel() {
             title: item.data?.[0]?.title,
             date:  item.data?.[0]?.date_created?.split('T')[0],
           }))
-          .filter(x => x.href && !/\.tif$/i.test(x.href))
+          .filter(x => x.href && !/\.tif$/i.test(x.href) && qualityScore(x.href) >= 1)
           .sort((a, b) => qualityScore(b.href) - qualityScore(a.href))
           .slice(0, 6);
         setItems(results);
