@@ -4,14 +4,20 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "sync-data": "node scripts/sync-data.mjs",
-    "predev": "node scripts/sync-data.mjs",
-    "prebuild": "node scripts/sync-data.mjs",
     "dev": "vite",
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "deploy": "vite build && gh-pages -d dist"
+    "deploy": "vite build && gh-pages -d dist",
+    "server": "node scripts/agent-server.js",
+    "pull:data": "node scripts/pull-data.js",
+    "pull:news": "node scripts/pull-news.js",
+    "pull:neows": "node scripts/pull-neows.js",
+    "pull:launches": "node scripts/pull-launches.js",
+    "pull:weather": "node scripts/pull-spaceweather.js",
+    "pull:planets": "node scripts/pull-planet-positions.js",
+    "pull:all": "node scripts/pull-data.js && node scripts/pull-news.js && node scripts/pull-neows.js && node scripts/pull-launches.js && node scripts/pull-spaceweather.js && node scripts/pull-planet-positions.js",
+    "daily": "node scripts/daily-run.js"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",
@@ -21,7 +27,9 @@
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-router-dom": "^7.18.1",
-    "three": "^0.185.0"
+    "three": "^0.185.0",
+    "apify-client": "^2.23.4",
+    "dotenv": "^17.4.2"
   },
   "devDependencies": {
     "@types/react": "^19.2.17",

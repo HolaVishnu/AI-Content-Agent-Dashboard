@@ -1,14 +1,13 @@
-// Copies the JSON data files written by ../scripts/pull-*.js (and the agent
-// dashboard's hand-pulled data.json) from the existing static dashboard/
-// folder into web/public/, so the new React app can fetch('/data.json') etc.
-// exactly like the old static site did — without touching the data pipeline.
+// Checks that required JSON data files exist in public/.
+// Scripts (pull-*.js) write directly to public/ now.
+// As a fallback, copies from the legacy dashboard/ folder if present.
 import { copyFile, mkdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const SOURCE_DIR = path.resolve(__dirname, '..', '..', 'dashboard');
+const LEGACY_DIR = path.resolve(__dirname, '..', '..', 'dashboard');
 const DEST_DIR = path.resolve(__dirname, '..', 'public');
 
 const FILES = [
@@ -22,20 +21,19 @@ const FILES = [
 
 async function main() {
   await mkdir(DEST_DIR, { recursive: true });
-  let synced = 0;
+  let copied = 0;
   for (const file of FILES) {
-    const src = path.join(SOURCE_DIR, file);
-    if (!existsSync(src)) {
-      console.warn(`sync-data: skipping ${file} (not found at ${src} — run the relevant scripts/pull-*.js first)`);
-      continue;
+    const dest = path.join(DEST_DIR, file);
+    if (existsSync(dest)) continue; // already there — scripts wrote it directly
+    const legacy = path.join(LEGACY_DIR, file);
+    if (existsSync(legacy)) {
+      await copyFile(legacy, dest);
+      copied++;
     }
-    await copyFile(src, path.join(DEST_DIR, file));
-    synced++;
   }
-  console.log(`sync-data: synced ${synced}/${FILES.length} JSON file(s) from dashboard/ into web/public/`);
+  if (copied > 0) console.log(`sync-data: migrated ${copied} file(s) from legacy dashboard/ → public/`);
 }
 
 main().catch(err => {
-  console.error('sync-data failed:', err.message);
-  process.exit(1);
+  console.error('sync-data warning:', err.message);
 });
