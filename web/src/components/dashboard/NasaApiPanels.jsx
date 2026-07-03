@@ -344,13 +344,17 @@ export function NasaGalleryPanel() {
   const [items,   setItems]   = useState([]);
   const [query,   setQuery]   = useState('nebula');
   const [loading, setLoading] = useState(false);
+  const [error,   setError]   = useState(null);
   const [light,   setLight]   = useState(null);
 
   useEffect(() => {
+    let cancelled = false;
+    setItems([]);   // clear immediately so old results don't linger
+    setError(null);
     setLoading(true);
-    // Fetch 20, sort by preview quality (medium/large first), take top 6
     cachedFetch(`https://images-api.nasa.gov/search?q=${encodeURIComponent(query)}&media_type=image&page_size=20`, 1_800_000)
       .then(d => {
+        if (cancelled) return;
         const results = (d.collection?.items || [])
           .map(item => ({
             href:  item.links?.[0]?.href,
@@ -362,8 +366,9 @@ export function NasaGalleryPanel() {
           .slice(0, 6);
         setItems(results);
       })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+      .catch(() => { if (!cancelled) setError('Failed to load images'); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
   }, [query]);
 
   return (
@@ -381,7 +386,8 @@ export function NasaGalleryPanel() {
         ))}
       </div>
       {loading && <div className="panel-empty">Searching…</div>}
-      {!loading && items.length === 0 && <div className="panel-empty">No results</div>}
+      {!loading && error && <div className="panel-empty" style={{color:'var(--aurora)'}}>⚠ {error} — try again</div>}
+      {!loading && !error && items.length === 0 && <div className="panel-empty">No results</div>}
       {!loading && items.length > 0 && (
         <div className="nasa-gallery-grid">
           {items.map((item, i) => (
